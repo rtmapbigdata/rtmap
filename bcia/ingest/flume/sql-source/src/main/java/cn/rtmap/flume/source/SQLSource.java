@@ -14,7 +14,11 @@ import org.apache.flume.PollableSource;
 import org.apache.flume.conf.Configurable;
 import org.apache.flume.event.SimpleEvent;
 import org.apache.flume.source.AbstractSource;
+
 import cn.rtmap.flume.metrics.SqlSourceCounter;
+import cn.rtmap.flume.ha.ElectionListener;
+import cn.rtmap.flume.ha.Master;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,6 +36,9 @@ public class SQLSource extends AbstractSource implements Configurable, PollableS
     private SqlSourceCounter sqlSourceCounter;
     private CSVWriter csvWriter;
     private HibernateHelper hibernateHelper;
+
+    private Master m;
+    private ElectionListener listener;
 
     /**
      * Configure the source, load configuration properties and establish connection with database
@@ -53,6 +60,13 @@ public class SQLSource extends AbstractSource implements Configurable, PollableS
        
         /* Instantiate the CSV Writer */
         csvWriter = new CSVWriter(new ChannelWriter(), '\t', CSVWriter.NO_QUOTE_CHARACTER);
+
+        String zkHosts = sqlSourceHelper.getZKHosts();
+        String zkNodePath = sqlSourceHelper.getZKNodePath();
+        int zkTimeout = sqlSourceHelper.getZKTimeout();
+
+        m = new Master(zkHosts, zkNodePath, zkTimeout);
+        listener = new ElectionListener(m);
     }
 
     /**
@@ -62,29 +76,28 @@ public class SQLSource extends AbstractSource implements Configurable, PollableS
     public Status process() throws EventDeliveryException {
 
         try {
-            sqlSourceCounter.startProcess();
+            if (m.isLeader()) {
+                sqlSourceCounter.startProcess();
 
-            String maxValue = hibernateHelper.GetLastRowIndex();
-            sqlSourceHelper.setMaxIndex(maxValue);
+                String maxValue = hibernateHelper.GetLastRowIndex();
+                sqlSourceHelper.setMaxIndex(maxValue);
 
-            List<List<Object>> result = hibernateHelper.executeQuery();
+                List<List<Object>> result = hibernateHelper.executeQuery();
 
-            if (!result.isEmpty()) {
-                csvWriter.writeAll(sqlSourceHelper.getAllRows(result));
-                csvWriter.flush();
-                sqlSourceCounter.incrementEventCount(result.size());
+                if (!result.isEmpty()) {
+                    csvWriter.writeAll(sqlSourceHelper.getAllRows(result));
+                    csvWriter.flush();
+                    sqlSourceCounter.incrementEventCount(result.size());
 
-                sqlSourceHelper.updateStatusFile(maxValue);
+                    sqlSourceHelper.updateStatusFile(maxValue);
+                }
 
-                // String indexValue = hibernateHelper.GetLastRowIndex();
-                // if (indexValue != null) {
-                //     sqlSourceHelper.updateStatusFile(indexValue);
-                // }
-            }
-
-            sqlSourceCounter.endProcess(result.size());
-            if (result.size() < sqlSourceHelper.getMaxRows()){
-                hibernateHelper.resetConnectionAndSleep();
+                sqlSourceCounter.endProcess(result.size());
+                if (result.size() < sqlSourceHelper.getMaxRows()){
+                    hibernateHelper.resetConnectionAndSleep();
+                }
+            } else {
+            	hibernateHelper.resetConnectionAndSleep();
             }
 
             return Status.READY;
@@ -104,6 +117,9 @@ public class SQLSource extends AbstractSource implements Configurable, PollableS
         LOG.info("Starting sql source {} ...", getName());
         sqlSourceCounter.start();
         super.start();
+
+        // identify leader
+        listener.start();
     }
 
     /**
@@ -115,7 +131,8 @@ public class SQLSource extends AbstractSource implements Configurable, PollableS
         try 
         {
             hibernateHelper.closeSession();
-            csvWriter.close();    
+            csvWriter.close();
+            listener.terminate();
         } catch (IOException e) {
             LOG.warn("Error CSVWriter object ", e);
         } finally {
