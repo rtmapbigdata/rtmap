@@ -15,8 +15,8 @@ public class ElectionListener extends Thread {
         this.m = m;
     }
 
-    public void terminate() {
-        isTerminated = true;
+    public boolean isTerminated() {
+        return isTerminated;
     }
 /*
     public static void main(String[] args) throws Exception {
@@ -43,13 +43,12 @@ public class ElectionListener extends Thread {
             m.runForMaster();
 
             while (!m.isExpired()) {
-                if (isTerminated)
-                    break;
                 Thread.sleep(1000);
             }
             m.stopZK();
         } catch (IOException | InterruptedException e) {
             LOG.error("Error on detecting master from zookeeper", e);
         }
+        isTerminated = true;
     }
 }
