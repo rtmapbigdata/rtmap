@@ -43,7 +43,6 @@ public class SQLSourceHelper {
     private String user;
     private String password;
     private String customQuery;
-    private String query;
     private String hibernateDialect;
     private String hibernateDriver;
 
@@ -52,6 +51,10 @@ public class SQLSourceHelper {
     private String checkColumn;
     private String lastValueQuery;
     private String initIndex;
+
+    private String zkHosts;
+    private String znodePath;
+    private int zkTimeout;
 
     private static final String DEFAULT_STATUS_DIRECTORY = "/var/lib/flume";
     private static final int DEFAULT_QUERY_DELAY = 10000;
@@ -81,6 +84,10 @@ public class SQLSourceHelper {
         hibernateDriver = context.getString("hibernate.connection.driver_class");
         lastValueQuery = context.getString("last.value.query");
         initIndex = context.getString("check.column.initial.value");
+
+        zkHosts = context.getString("zookeeper.hosts");
+        znodePath = context.getString("zookeeper.znode.path");
+        zkTimeout = context.getInteger("zookeeper.timeout");
 
         checkMandatoryProperties();
 
@@ -295,5 +302,17 @@ public class SQLSourceHelper {
 
     void setMaxIndex(String value) {
         maxIndex = value;
+    }
+
+    String getZKHosts() {
+        return zkHosts;
+    }
+
+    String getZKNodePath() {
+        return znodePath;
+    }
+
+    int getZKTimeout() {
+        return zkTimeout;
     }
 }
