@@ -17,7 +17,8 @@ import redis.clients.jedis.JedisPool
 object WifiReport {
   def main(args: Array[String]) {
 
-    val sparkConf = new SparkConf().setAppName("WifiReport").setMaster("local[2]")
+    //val sparkConf = new SparkConf().setAppName("WifiReport").setMaster("local[2]")
+    val sparkConf = new SparkConf().setAppName("WifiReport")
     val ssc =  new StreamingContext(sparkConf, Seconds(args(0).toInt))
     ssc.checkpoint("checkpoint_lbs")
 
@@ -28,7 +29,7 @@ object WifiReport {
    val lines = KafkaUtils.createStream(ssc, args(2), args(4), topicpMap).map(_._2)
 
     lazy val result = {object RedisClient extends Serializable {
-      lazy val pool = new JedisPool(new GenericObjectPoolConfig(),"127.0.0.1",6379,30000)
+      lazy val pool = new JedisPool(new GenericObjectPoolConfig(),args(7),6379,30000)
       lazy val hook = new Thread {
         override def run = { println("Execute hook thread: " + this)
           pool.destroy()}}
@@ -45,7 +46,7 @@ object WifiReport {
    lines.flatMap(_.split("\n").map(_.split("\t")))
    .foreachRDD(m => {m.foreachPartition(l => l.foreach(p => {
      object RedisClient extends Serializable {
-       lazy val pool = new JedisPool(new GenericObjectPoolConfig(),"127.0.0.1",6379,30000)
+       lazy val pool = new JedisPool(new GenericObjectPoolConfig(),args(7),6379,30000)
        lazy val hook = new Thread {
          override def run = { println("Execute hook thread: " + this)
            pool.destroy()}}
@@ -121,9 +122,9 @@ object WifiReport {
      RedisClient.pool.destroy()
    }))})
 
-    lines.count().flatMap(l => result.map(m => (m.split("\t"))).filter(p => p(0)=="se").map(p => p(1)+"\t"+p(2)+"\t"+p(3)+"\t"+(p(4).toInt/p(5).toInt).toString+"\t"+(p(5).toFloat/10).toString)).saveAsTextFiles(args(7))//时段,min,max,avg,速率(人/分钟)
-    lines.count().flatMap(l => result.map(m => (m.split("\t"))).filter(p => p(0)!="se").map(p => p(0)+"\t"+p(1)+"\t"+p(2)+"\t"+p(3)+"\t"+(p(4).toInt/p(5).toInt).toString+"\t"+(p(5).toFloat/10).toString)).saveAsTextFiles(args(8))//分档,时段,min,max,avg,速率(人/分钟)
-    if (args(6).toInt == 1) {lines.saveAsTextFiles(args(9))}
+    lines.count().flatMap(l => result.map(m => (m.split("\t"))).filter(p => p(0)=="se").map(p => p(1)+"\t"+p(2)+"\t"+p(3)+"\t"+(p(4).toInt/p(5).toInt).toString+"\t"+(p(5).toFloat/10).toString)).saveAsTextFiles(args(8))//时段,min,max,avg,速率(人/分钟)
+    lines.count().flatMap(l => result.map(m => (m.split("\t"))).filter(p => p(0)!="se").map(p => p(0)+"\t"+p(1)+"\t"+p(2)+"\t"+p(3)+"\t"+(p(4).toInt/p(5).toInt).toString+"\t"+(p(5).toFloat/10).toString)).saveAsTextFiles(args(9))//分档,时段,min,max,avg,速率(人/分钟)
+    if (args(6).toInt == 1) {lines.saveAsTextFiles(args(10))}
 
     ssc.start()
     ssc.awaitTermination()

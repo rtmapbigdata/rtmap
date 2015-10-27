@@ -1,4 +1,4 @@
 #!/bin/bash
 
 . ./config.sh
-flume-ng agent --conf-file ./barcode.conf --name agent1 --conf $FLUME_HOME/conf -Dflume.monitoring.type=http -Dflume.monitoring.port=41412 -Dflume.root.logger=INFO,console
+flume-ng agent --conf-file ../conf/barcode.conf --name agent1 --conf ../conf -Dflume.root.logger=INFO,LOGFILE -Dflume.log.dir=../../logs/flume-log -Dflume.log.file=flume-barcode.log

@@ -76,7 +76,7 @@ public class SQLSource extends AbstractSource implements Configurable, PollableS
     public Status process() throws EventDeliveryException {
 
         try {
-            if (m.isLeader()) {
+            if (m.isLeader() && !listener.isTerminated()) {
                 sqlSourceCounter.startProcess();
 
                 String maxValue = hibernateHelper.GetLastRowIndex();
@@ -132,7 +132,6 @@ public class SQLSource extends AbstractSource implements Configurable, PollableS
         {
             hibernateHelper.closeSession();
             csvWriter.close();
-            listener.terminate();
         } catch (IOException e) {
             LOG.warn("Error CSVWriter object ", e);
         } finally {
