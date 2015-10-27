@@ -15,7 +15,8 @@ import redis.clients.jedis.JedisPool
 object FlightReport {
   def main(args: Array[String]) {
 
-    val sparkConf = new SparkConf().setAppName("FlightReport").setMaster("local[2]")
+    //val sparkConf = new SparkConf().setAppName("FlightReport").setMaster("local[2]")
+    val sparkConf = new SparkConf().setAppName("FlightReport")
     //val sc  = new SparkContext(sparkConf)
     val ssc =  new StreamingContext(sparkConf, Seconds(args(0).toInt))
     ssc.checkpoint("checkpoint")
@@ -33,7 +34,7 @@ object FlightReport {
     val re_time=300
 
      lazy val result = {object RedisClient extends Serializable {
-      lazy val pool = new JedisPool(new GenericObjectPoolConfig(),"127.0.0.1",6379,30000)
+      lazy val pool = new JedisPool(new GenericObjectPoolConfig(),args(7),6379,30000)
       lazy val hook = new Thread {
         override def run = { println("Execute hook thread: " + this)
           pool.destroy()}}
@@ -50,7 +51,7 @@ object FlightReport {
     lines_lkxxb.map(_.split("\t"))//2:旅客id,3:航班号,8:登机号
       .foreachRDD(l => {l.foreachPartition(p => p.foreach(m => {
       object RedisClient extends Serializable {
-        lazy val pool = new JedisPool(new GenericObjectPoolConfig(),"127.0.0.1",6379,30000)
+        lazy val pool = new JedisPool(new GenericObjectPoolConfig(),args(7),6379,30000)
         lazy val hook = new Thread {
           override def run = { println("Execute hook thread: " + this)
             pool.destroy()}}
@@ -65,7 +66,7 @@ object FlightReport {
     lines_barcode.map(_.split("\t"))//4:航班号,8:登机序号,14:最后一次扫描时间
       .foreachRDD(l => {l.foreachPartition(p => p.foreach(m => {
       object RedisClient extends Serializable {
-        lazy val pool = new JedisPool(new GenericObjectPoolConfig(),"127.0.0.1",6379,30000)
+        lazy val pool = new JedisPool(new GenericObjectPoolConfig(),args(7),6379,30000)
         lazy val hook = new Thread {
           override def run = { println("Execute hook thread: " + this)
             pool.destroy()}}
@@ -86,7 +87,7 @@ object FlightReport {
     lines_ajxxb.map(_.split("\t"))//3:旅客id,5:安检通道号,7:安检时间
       .foreachRDD(l => {l.foreachPartition(p => p.foreach(m => {
       object RedisClient extends Serializable {
-        lazy val pool = new JedisPool(new GenericObjectPoolConfig(),"127.0.0.1",6379,30000)
+        lazy val pool = new JedisPool(new GenericObjectPoolConfig(),args(7),6379,30000)
         lazy val hook = new Thread {
           override def run = { println("Execute hook thread: " + this)
             pool.destroy()}}
@@ -168,7 +169,7 @@ object FlightReport {
       RedisClient.pool.destroy()
     }))})
 
-    val hdfs_path=args(7).split(" ")
+    val hdfs_path=args(8).split(" ")
     lines.count().flatMap(l => result.map(m => (m.split("\t"))).filter(p => p(0)=="sg").map(p => p(1)+"\t"+p(2)+"\t"+p(3)+"\t"+(p(4).toInt/p(5).toInt).toString+"\t"+(p(5).toFloat/10).toString)).saveAsTextFiles(hdfs_path(0))
     //lines.flatMap(l => result.map(m => (m.split("\t"))).filter(p => p(0)=="sg").map(p => p(1)+"\t"+p(2)+"\t"+p(3)+"\t"+(p(4).toInt/p(5).toInt).toString+"\t"+(p(5).toFloat/10).toString)).saveAsTextFiles(hdfs_path(0))//时段,min,max,avg,速率(人/分钟)
     lines.count().flatMap(l => result.map(m => (m.split("\t"))).filter(p => p(0)=="sd").map(p => p(1)+"\t"+p(2)+"\t"+p(3)+"\t"+p(4)+"\t"+(p(5).toInt/p(6).toInt).toString+"\t"+(p(6).toFloat/10).toString+"\t"+(p(5).toFloat/p(6).toFloat/480).toString)).saveAsTextFiles(hdfs_path(1))//安检通道号,时段,min,max,avg,速率,负荷率
