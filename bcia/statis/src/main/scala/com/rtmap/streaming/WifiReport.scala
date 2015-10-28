@@ -2,7 +2,7 @@ package com.rtmap.streaming
 
 import java.text.SimpleDateFormat
 
-import com.rtmap.utils.{PolyUtil, ConfUtil}
+import com.rtmap.utils.{ConfUtil, PolyUtil}
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig
 import org.apache.spark.SparkConf
 import org.apache.spark.streaming.kafka.KafkaUtils
@@ -26,6 +26,7 @@ object WifiReport {
 
    val formats = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss")
    val topicpMap =args(1).split(",").map((_,args(3).toInt)).toMap
+   //val lines = KafkaUtils.createStream(ssc, args(2), args(4), topicpMap,StorageLevel.MEMORY_AND_DISK_SER).map(_._2)
    val lines = KafkaUtils.createStream(ssc, args(2), args(4), topicpMap).map(_._2)
 
     lazy val result = {object RedisClient extends Serializable {
@@ -43,7 +44,7 @@ object WifiReport {
       s
     }
 
-   lines.flatMap(_.split("\n").map(_.split("\t")))
+   lines.flatMap(_.split("\n").map(_.split("\t")).filter(_.length==7))
    .foreachRDD(m => {m.foreachPartition(l => l.foreach(p => {
      object RedisClient extends Serializable {
        lazy val pool = new JedisPool(new GenericObjectPoolConfig(),args(7),6379,30000)
@@ -117,7 +118,11 @@ object WifiReport {
              else if (dura <= l(2).toInt & dura > 0) {jedis.setex("6"+"-"+segm,re_time,"6"+"\t"+segm+"\t"+dura.toString+"\t"+l(3)+"\t"+(dura+l(4).toInt)+"\t"+(l(5).toInt+1).toString)}
              else {jedis.setex("6"+"-"+segm,re_time,"6"+"\t"+segm+"\t"+l(2)+"\t"+l(3)+"\t"+(dura+l(4).toInt)+"\t"+(l(5).toInt+1).toString)}
            } else {jedis.setex("6"+"-"+segm,re_time,"6"+"\t"+segm+"\t"+dura.toString+"\t"+dura.toString+"\t"+dura.toString+"\t"+"1")}}
-     }}//时段,min,max,sum,count
+     }
+       jedis.select(0)
+       jedis.del(p(1))
+     }//时段,min,max,sum,count
+
      RedisClient.pool.returnResource(jedis)
      RedisClient.pool.destroy()
    }))})
