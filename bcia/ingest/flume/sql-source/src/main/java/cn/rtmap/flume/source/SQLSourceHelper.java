@@ -56,6 +56,9 @@ public class SQLSourceHelper {
     private String znodePath;
     private int zkTimeout;
 
+    private String rcfilePath;
+    private String rcfilePrefix;
+
     private static final String DEFAULT_STATUS_DIRECTORY = "/var/lib/flume";
     private static final int DEFAULT_QUERY_DELAY = 10000;
     private static final int DEFAULT_BATCH_SIZE = 100;
@@ -88,6 +91,9 @@ public class SQLSourceHelper {
         zkHosts = context.getString("zookeeper.hosts");
         znodePath = context.getString("zookeeper.znode.path");
         zkTimeout = context.getInteger("zookeeper.timeout");
+
+        rcfilePath = context.getString("record.count.file.path");
+        rcfilePrefix = context.getString("record.count.file.prefix");
 
         checkMandatoryProperties();
 
@@ -172,8 +178,8 @@ public class SQLSourceHelper {
                 String[] statusInfo = new String(chars).split("	");
                 if (statusInfo[0].equals(connectionURL) && statusInfo[1].equals(table)) {
                     reader.close();
-                    LOG.info(statusFilePath + "/" + statusFileName + " correctly formed");                
-                    return statusInfo[2];
+                    LOG.info(statusFilePath + "/" + statusFileName + " correctly formed");           
+                    return statusInfo[2].replaceAll("\\r\\n|\\r|\\n", "");
                 }
                 else{
                     LOG.warn(statusFilePath + "/" + statusFileName + " corrupt!!! Deleting it.");
@@ -314,5 +320,13 @@ public class SQLSourceHelper {
 
     int getZKTimeout() {
         return zkTimeout;
+    }
+
+    String getRecordCounterFilePath() {
+    	return rcfilePath;
+    }
+
+    String getRecordCounterFilePrefix() {
+    	return rcfilePrefix;
     }
 }

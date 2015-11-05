@@ -1,8 +1,12 @@
 package cn.rtmap.flume.source;
 
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,8 +38,9 @@ public class SQLSource extends AbstractSource implements Configurable, PollableS
     private static final Logger LOG = LoggerFactory.getLogger(SQLSource.class);
     protected SQLSourceHelper sqlSourceHelper;
     private SqlSourceCounter sqlSourceCounter;
-    private CSVWriter csvWriter;
-    private HibernateHelper hibernateHelper;
+    private CSVWriter csvWriter; 
+    //private HibernateHelper hibernateHelper;
+    private DBHelper dbHelper;
 
     private Master m;
     private ElectionListener listener;
@@ -55,9 +60,10 @@ public class SQLSource extends AbstractSource implements Configurable, PollableS
         sqlSourceCounter = new SqlSourceCounter("SOURCESQL." + this.getName());
         
         /* Establish connection with database */
-        hibernateHelper = new HibernateHelper(sqlSourceHelper);
-        hibernateHelper.establishSession();
-       
+        //hibernateHelper = new HibernateHelper(sqlSourceHelper);
+        //hibernateHelper.establishSession();
+        dbHelper = new DBHelper(sqlSourceHelper);
+        
         /* Instantiate the CSV Writer */
         csvWriter = new CSVWriter(new ChannelWriter(), '\t', CSVWriter.NO_QUOTE_CHARACTER);
 
@@ -74,37 +80,41 @@ public class SQLSource extends AbstractSource implements Configurable, PollableS
      */
     @Override
     public Status process() throws EventDeliveryException {
-
-        try {
-            if (m.isLeader() && !listener.isTerminated()) {
+        if (m.isLeader() && !listener.isTerminated()) {
+            try {
                 sqlSourceCounter.startProcess();
 
-                String maxValue = hibernateHelper.GetLastRowIndex();
+                String maxValue = dbHelper.GetLastRowIndex();
                 sqlSourceHelper.setMaxIndex(maxValue);
 
-                List<List<Object>> result = hibernateHelper.executeQuery();
+                List<List<Object>> result = dbHelper.executeQuery();
+                String currIndex = sqlSourceHelper.getCurrentIndex();
 
                 if (!result.isEmpty()) {
                     csvWriter.writeAll(sqlSourceHelper.getAllRows(result));
                     csvWriter.flush();
-                    sqlSourceCounter.incrementEventCount(result.size());
 
+                    sqlSourceCounter.incrementEventCount(result.size());
                     sqlSourceHelper.updateStatusFile(maxValue);
+                    writeCountToFile(currIndex, maxValue, result.size());
                 }
 
                 sqlSourceCounter.endProcess(result.size());
-                if (result.size() < sqlSourceHelper.getMaxRows()){
-                    hibernateHelper.resetConnectionAndSleep();
-                }
-            } else {
-            	hibernateHelper.resetConnectionAndSleep();
+                Thread.sleep(sqlSourceHelper.getRunQueryDelay());
+                return Status.READY;
+            } catch (IOException | InterruptedException e) {
+                LOG.error("Error procesing row", e);
+                return Status.BACKOFF;
+            } finally {
+                dbHelper.close();
             }
-
+        } else {
+            try {
+				Thread.sleep(sqlSourceHelper.getRunQueryDelay());
+			} catch (InterruptedException e) {
+				LOG.error("Processing was interrupted", e);
+			}
             return Status.READY;
-
-        } catch (IOException | InterruptedException e) {
-            LOG.error("Error procesing row", e);
-            return Status.BACKOFF;
         }
     }
  
@@ -130,14 +140,45 @@ public class SQLSource extends AbstractSource implements Configurable, PollableS
         LOG.info("Stopping sql source {} ...", getName());
         try 
         {
-            hibernateHelper.closeSession();
+            //hibernateHelper.closeSession();
             csvWriter.close();
-        } catch (IOException e) {
-            LOG.warn("Error CSVWriter object ", e);
+
+            listener.terminate();
+            listener.join();
+        } catch (IOException | InterruptedException e) {
+            LOG.warn("Error occured ", e);
         } finally {
             this.sqlSourceCounter.stop();
             super.stop();
         }
+    }
+
+    private void writeCountToFile(String startDate, String endDate, int count) throws IOException {
+    	String filePath = sqlSourceHelper.getRecordCounterFilePath();
+    	String prefix = sqlSourceHelper.getRecordCounterFilePrefix();
+    	String postfix = ".txt";
+
+		DateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+		Date date = new Date();
+
+    	String fileName = String.format("%s/%s%s%s", filePath, prefix, sdf.format(date), postfix);
+    	Writer writer = new FileWriter(fileName, true);
+
+    	/*
+    	List<String> list = new ArrayList<String>();
+    	list.add(startDate);
+    	list.add(endDate);
+    	list.add(String.valueOf(count));
+*/
+
+    	writer.write(startDate + '\t');
+    	writer.write(endDate + '\t');
+    	writer.write(String.valueOf(count) + '\n');
+    	/*
+    	String[] entries = list.toArray(new String[list.size()]);
+    	writer.writeNext(entries);
+    	*/
+    	writer.close();
     }
 
     private class ChannelWriter extends Writer{

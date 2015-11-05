@@ -6,11 +6,13 @@ import java.util.Map;
 import org.apache.flume.Context;
 import org.apache.flume.Event;
 import org.apache.flume.interceptor.Interceptor;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public abstract class Validator implements Interceptor {
     private static final Logger LOG = LoggerFactory.getLogger(Validator.class);
@@ -25,12 +27,20 @@ public abstract class Validator implements Interceptor {
     public Event intercept(Event event) {
         Map<String, String> headers = event.getHeaders();
         String body = new String(event.getBody());
+
+        /* append a timestamp column */
+		DateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		Date date = new Date();
+		body = String.format("%s\t%s", body.toString(), sdf.format(date));
+        
         if (!validate(body)) {
             LOG.error("data validation failed: {}", body);
             headers.put("validation", "1");
         } else {
             headers.put("validation", "0");
         }
+
+        event.setBody(body.getBytes());
         return event;
     }
 

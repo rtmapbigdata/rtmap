@@ -1,6 +1,8 @@
 package cn.rtmap.flume.ha;
 
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -8,15 +10,22 @@ public class ElectionListener extends Thread {
 
     private static final Logger LOG = LoggerFactory.getLogger(ElectionListener.class);
 
-    private volatile boolean isTerminated = false;
+    //private volatile boolean isTerminated = false;
     private Master m;
+    private AtomicBoolean shouldStop;
 
     public ElectionListener(Master m) {
         this.m = m;
+        shouldStop = new AtomicBoolean();
+        shouldStop.set(false);
     }
 
     public boolean isTerminated() {
-        return isTerminated;
+        return shouldStop.get();
+    }
+    
+    public void terminate() {
+    	shouldStop.set(true);
     }
 /*
     public static void main(String[] args) throws Exception {
@@ -43,12 +52,15 @@ public class ElectionListener extends Thread {
             m.runForMaster();
 
             while (!m.isExpired()) {
+            	if (shouldStop.get())
+            		break;
                 Thread.sleep(1000);
             }
             m.stopZK();
         } catch (IOException | InterruptedException e) {
             LOG.error("Error on detecting master from zookeeper", e);
         }
-        isTerminated = true;
+        // isTerminated = true;
+        shouldStop.set(true);
     }
 }
