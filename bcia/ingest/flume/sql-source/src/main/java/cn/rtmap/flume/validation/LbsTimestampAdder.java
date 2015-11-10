@@ -3,16 +3,18 @@ package cn.rtmap.flume.validation;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
+import org.apache.flume.Context;
 import org.apache.flume.Event;
+import org.apache.flume.interceptor.Interceptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class LbsTimestampAdder extends Validator {
+public class LbsTimestampAdder implements Interceptor {
 	private static final Logger LOG = LoggerFactory.getLogger(LbsTimestampAdder.class);
 
-	@Override
 	public boolean validate(Object data) {
 		return true;
 	}
@@ -44,5 +46,29 @@ public class LbsTimestampAdder extends Validator {
 
         event.setBody(body.getBytes());
         return event;
+    }
+
+	@Override
+	public void initialize() {}
+
+    @Override
+    public List<Event> intercept(List<Event> events) {
+        for (Event event : events) {
+            intercept(event);
+        }
+        return events;
+    }
+
+	@Override
+	public void close() {}
+
+    public static class Builder implements Interceptor.Builder {
+        @Override
+        public Interceptor build() {
+            return new LbsTimestampAdder();
+        }
+
+        @Override
+        public void configure(Context context) {}
     }
 }

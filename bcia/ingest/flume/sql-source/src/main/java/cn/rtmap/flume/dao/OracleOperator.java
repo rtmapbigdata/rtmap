@@ -21,6 +21,8 @@ public class OracleOperator {
         if (statement == null || statement.isClosed()) {
             statement = connection.createStatement();
         }
+
+        statement.setQueryTimeout(Constants.AJ_STATMENT_QUERY_TIMEOUT);
         return statement.executeQuery(sql);
     }
 
@@ -31,6 +33,8 @@ public class OracleOperator {
         if (statement == null || statement.isClosed()) {
             statement = connection.createStatement();
         }
+
+        statement.setQueryTimeout(Constants.AJ_STATMENT_QUERY_TIMEOUT);
         return statement.executeUpdate(sql);
     }
 

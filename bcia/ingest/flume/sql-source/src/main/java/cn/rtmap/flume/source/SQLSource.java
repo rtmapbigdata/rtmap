@@ -82,24 +82,24 @@ public class SQLSource extends AbstractSource implements Configurable, PollableS
     public Status process() throws EventDeliveryException {
         if (m.isLeader() && !listener.isTerminated()) {
             try {
-                sqlSourceCounter.startProcess();
-
                 String maxValue = dbHelper.GetLastRowIndex();
-                sqlSourceHelper.setMaxIndex(maxValue);
+                if (maxValue != null) {
+                    sqlSourceHelper.setMaxIndex(maxValue);
+                    sqlSourceCounter.startProcess();
 
-                List<List<Object>> result = dbHelper.executeQuery();
-                String currIndex = sqlSourceHelper.getCurrentIndex();
+                    List<List<Object>> result = dbHelper.executeQuery();
+                    String currIndex = sqlSourceHelper.getCurrentIndex();
 
-                if (!result.isEmpty()) {
-                    csvWriter.writeAll(sqlSourceHelper.getAllRows(result));
-                    csvWriter.flush();
+                    if (!result.isEmpty()) {
+                        csvWriter.writeAll(sqlSourceHelper.getAllRows(result));
+                        csvWriter.flush();
 
-                    sqlSourceCounter.incrementEventCount(result.size());
-                    sqlSourceHelper.updateStatusFile(maxValue);
-                    writeCountToFile(currIndex, maxValue, result.size());
+                        sqlSourceCounter.incrementEventCount(result.size());
+                        sqlSourceHelper.updateStatusFile(maxValue);
+                        writeCountToFile(currIndex, maxValue, result.size());
+                    }
+                    sqlSourceCounter.endProcess(result.size());
                 }
-
-                sqlSourceCounter.endProcess(result.size());
                 Thread.sleep(sqlSourceHelper.getRunQueryDelay());
                 return Status.READY;
             } catch (IOException | InterruptedException e) {

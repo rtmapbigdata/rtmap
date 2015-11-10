@@ -200,7 +200,7 @@ object WifiReport {
           conn = DriverManager.getConnection("jdbc:mysql://r2s4:3306/bcia_statis", "bcia", "bcia")
           val res = result.map(m => (m.split("\t")))
           res.filter(n => n(0) == "se").foreach(p => {
-            stmt1 = conn.prepareStatement("insert into ignore wifi_result_segmt(segmt,min_duar,max_duar,avg_duar,pass_rate,median_duar) values (?,?,?,?,?,?)");
+            stmt1 = conn.prepareStatement("insert ignore into wifi_result_segmt(segmt,min_duar,max_duar,avg_duar,pass_rate,median_duar) values (?,?,?,?,?,?)");
             stmt1.setString(1, p(1))
             stmt1.setInt(2, p(2).toInt)
             stmt1.setInt(3, p(3).toInt)
@@ -209,7 +209,7 @@ object WifiReport {
             stmt1.setString(6, "")
             stmt1.executeUpdate();})
           res.filter(n => n(0) != "se").foreach(p => {
-            stmt2 = conn.prepareStatement("insert into ignore wifi_result_segmt_bracket(level_id,segmt,min_duar,max_duar,avg_duar,pass_rate) values (?,?,?,?,?,?)");
+            stmt2 = conn.prepareStatement("insert ignore into wifi_result_segmt_bracket(level_id,segmt,min_duar,max_duar,avg_duar,pass_rate) values (?,?,?,?,?,?)");
             stmt2.setInt(1, p(0).toInt)
             stmt2.setString(2, p(1))
             stmt2.setInt(3, p(2).toInt)

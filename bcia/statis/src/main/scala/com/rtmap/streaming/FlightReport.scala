@@ -308,7 +308,7 @@ object FlightReport {
         conn = DriverManager.getConnection("jdbc:mysql://r2s4:3306/bcia_statis", "bcia", "bcia")
         val res = result.map(m => (m.split("\t")))
         res.filter(n => n(0)=="sg").foreach(p => {
-          stmt1 = conn.prepareStatement("insert into ignore profession_result_segmt(segmt,min_duar,max_duar,avg_duar,pass_rate,median_duar) values (?,?,?,?,?,?)");
+          stmt1 = conn.prepareStatement("insert ignore into profession_result_segmt(segmt,min_duar,max_duar,avg_duar,pass_rate,median_duar) values (?,?,?,?,?,?)");
           stmt1.setString(1,p(1))
           stmt1.setInt(2, p(2).toInt)
           stmt1.setInt(3, p(3).toInt)
@@ -317,7 +317,7 @@ object FlightReport {
           stmt1.setString(6,"")
           stmt1.executeUpdate();})
         res.filter(n => n(0)=="sd").foreach(p => {
-          stmt2 = conn.prepareStatement("insert into ignore profession_result_segmt_sck(sck_field,segmt,min_duar,max_duar,avg_duar,pass_rate,load_rate,median_duar,top5_avg_duar) values (?,?,?,?,?,?,?,?,?)");
+          stmt2 = conn.prepareStatement("insert ignore into profession_result_segmt_sck(sck_field,segmt,min_duar,max_duar,avg_duar,pass_rate,load_rate,median_duar,top5_avg_duar) values (?,?,?,?,?,?,?,?,?)");
           stmt2.setString(1,p(1))
           stmt2.setString(2, p(2))
           stmt2.setInt(3,p(3).toInt)
@@ -329,7 +329,7 @@ object FlightReport {
           stmt2.setString(9,"")
           stmt2.executeUpdate();})
         res.filter(n => n(0)=="le").foreach(p => {
-          stmt3 = conn.prepareStatement("insert into ignore profession_result_segmt_bracket(level_id,segmt,min_duar,max_duar,avg_duar,pass_rate) values (?,?,?,?,?,?)");
+          stmt3 = conn.prepareStatement("insert ignore into profession_result_segmt_bracket(level_id,segmt,min_duar,max_duar,avg_duar,pass_rate) values (?,?,?,?,?,?)");
           stmt3.setInt(1,p(1).toInt)
           stmt3.setString(2, p(2))
           stmt3.setInt(3, p(3).toInt)
@@ -338,7 +338,7 @@ object FlightReport {
           stmt3.setFloat(6, p(6).toFloat/10)
           stmt3.executeUpdate();})
         res.filter(n => n(0)=="barcode").foreach(p => {
-          stmt4 = conn.prepareStatement("insert into ignore profession_result_segmt_barcode(segmt,gate_id,pass_num) values (?,?,?)");
+          stmt4 = conn.prepareStatement("insert ignore into profession_result_segmt_barcode(segmt,gate_id,pass_num) values (?,?,?)");
           stmt4.setString(1,p(2))
           stmt4.setString(2, p(1))
           stmt4.setInt(3, p(3).toInt)

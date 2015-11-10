@@ -1,10 +1,5 @@
 package cn.rtmap.flume.dao;
 
-//import org.apache.commons.io.IOUtils;
-//import org.apache.hadoop.fs.FileSystem;
-//import org.apache.hadoop.fs.Path;
-//import org.apache.hadoop.hbase.util.Bytes;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,15 +24,8 @@ public class Constants {
     public static final String AJ_JDBC_URL = getValue("aj.jdbc.url");
     public static final String AJ_JDBC_USERNAME = getValue("aj.jdbc.username");
     public static final String AJ_JDBC_PASSWORD = getValue("aj.jdbc.password");
-
-    /**
-     * hive connect information
-     */
-    public static final String HIVE_JDBC_DRIVER = getValue("hive.jdbc.driver");
-    public static final String HIVE_JDBC_URL = getValue("hive.jdbc.url");
-    public static final String HIVE_JDBC_USERNAME = getValue("hive.jdbc.username");
-    public static final String HIVE_JDBC_PASSWORD = getValue("hive.jdbc.password");
-
+    public static final int    AJ_STATMENT_QUERY_TIMEOUT = getValueAsInt("aj.statment.query.timeout");
+    public static final String AJ_CONNECT_PROPS = getValue("aj.connect.props");
 
     /**
      * get value from loader
