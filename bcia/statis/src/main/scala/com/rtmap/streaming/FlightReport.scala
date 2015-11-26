@@ -16,8 +16,8 @@ import redis.clients.jedis.JedisPool
 object FlightReport {
   def main(args: Array[String]) {
 
-    val sparkConf = new SparkConf().setAppName("FlightReport").setMaster("local[2]")
-    //val sparkConf = new SparkConf().setAppName("FlightReport")
+    //val sparkConf = new SparkConf().setAppName("FlightReport").setMaster("local[2]")
+    val sparkConf = new SparkConf().setAppName("FlightReport")
     //val sc  = new SparkContext(sparkConf)
     val ssc =  new StreamingContext(sparkConf, Seconds(args(0).toInt))
     ssc.checkpoint("checkpoint")
