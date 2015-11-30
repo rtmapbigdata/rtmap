@@ -46,7 +46,7 @@ public class Constants {
      */
     static class Loader {
         private static Properties properties = new Properties();
-        private static final String CONFIG_PATH = "/config.properties";
+        private static final String CONFIG_PATH = "/sql-source-config.properties";
 
         /**
          * load configurations while system start
@@ -59,6 +59,11 @@ public class Constants {
                     System.exit(1);
                 }
                 properties.load(inputStream);
+                for (Object key : properties.keySet()) {
+                	String val = properties.getProperty(key.toString());
+                	String val2 =  (val != null) ? val : "null";
+                	LOGGER.info("properties key:" + key.toString() + ", value:" + val2);
+                }
                 inputStream.close();
             } catch (IOException e) {
                 LOGGER.error("load configuration properties error: " + e.getMessage(), e);

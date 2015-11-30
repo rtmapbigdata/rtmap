@@ -21,17 +21,21 @@ public class SFTPInterceptor implements Interceptor {
         String fileName = headers.get("filename");
         String[] toks = fileName.split("_");
         
-        if (toks.length >= 3) {
+        if (toks.length >= 5) {
         	String dateTime = toks[0];
         	String date = dateTime.substring(0, 8);
         	String driver = toks[1];
-        	String vehicle = toks[2].substring(0, 2);
+        	String vehicle = toks[2];
+        	String device = toks[3];
+        	String building = toks[4];
 
         	headers.put("date", date);
         	headers.put("driver", driver);
         	headers.put("vehicle", vehicle);
+        	headers.put("device", device);
+        	headers.put("build", building);
         	
-        	body = String.format("%s\t%s\t%s\t%s", dateTime, driver, vehicle, body);
+        	body = String.format("%s\t%s\t%s\t%s\t%s\t%s", dateTime, driver, vehicle, device, building, body);
         }
 
         event.setBody(body.getBytes());

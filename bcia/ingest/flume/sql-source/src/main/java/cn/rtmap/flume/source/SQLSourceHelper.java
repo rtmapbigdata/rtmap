@@ -40,8 +40,8 @@ public class SQLSourceHelper {
     private String statusFileName;
     private String connectionURL;
     private String table;
-    private String user;
-    private String password;
+    //private String user;
+    //private String password;
     private String customQuery;
     private String hibernateDialect;
     private String hibernateDriver;
@@ -58,6 +58,10 @@ public class SQLSourceHelper {
 
     private String rcfilePath;
     private String rcfilePrefix;
+    
+    private String scheduleCornExpress;
+    private String scheduleJobKey;
+    private String scheduleTriggerKey;
 
     private static final String DEFAULT_STATUS_DIRECTORY = "/var/lib/flume";
     private static final int DEFAULT_QUERY_DELAY = 10000;
@@ -77,8 +81,8 @@ public class SQLSourceHelper {
         table = context.getString("table");
         checkColumn = context.getString("check.column.name");
         runQueryDelay = context.getInteger("run.query.delay",DEFAULT_QUERY_DELAY);
-        user = context.getString("user");
-        password = context.getString("password");
+        //user = context.getString("user");
+        //password = context.getString("password");
         directory = new File(statusFilePath);
         customQuery = context.getString("custom.query");
         batchSize = context.getInteger("batch.size",DEFAULT_BATCH_SIZE);
@@ -94,6 +98,10 @@ public class SQLSourceHelper {
 
         rcfilePath = context.getString("record.count.file.path");
         rcfilePrefix = context.getString("record.count.file.prefix");
+
+        scheduleCornExpress = context.getString("job.schedule.corn.express");
+        scheduleJobKey = context.getString("job.schedule.job.key");
+        scheduleTriggerKey = context.getString("job.schedule.trigger.key");
 
         checkMandatoryProperties();
 
@@ -214,12 +222,12 @@ public class SQLSourceHelper {
         if (table == null && customQuery == null){
             throw new ConfigurationException("property table or custom query not set");
         }
-        if (password == null){
-            throw new ConfigurationException("password property not set");
-        }
-        if (user == null){
-            throw new ConfigurationException("user property not set");
-        }
+        //if (password == null){
+        //    throw new ConfigurationException("password property not set");
+        //}
+        //if (user == null){
+        //    throw new ConfigurationException("user property not set");
+        //}
     }
 
     /*
@@ -253,16 +261,16 @@ public class SQLSourceHelper {
     /*
      * @return String user for database
      */
-    String getUser() {
-        return user;
-    }
+    //String getUser() {
+    //    return user;
+    //}
 
     /*
      * @return String password for user
      */
-    String getPassword() {
-        return password;
-    }
+    //String getPassword() {
+    //    return password;
+    //}
 
     /*
      * @return int delay in ms
@@ -328,5 +336,17 @@ public class SQLSourceHelper {
 
     String getRecordCounterFilePrefix() {
     	return rcfilePrefix;
+    }
+
+    public String getCornScheduleExpress() {
+		return scheduleCornExpress;
+    }
+
+    public String getCornScheduleJobKey() {
+    	return scheduleJobKey;
+    }
+
+    public String getCornScheduleTriggerKey() {
+    	return scheduleTriggerKey;
     }
 }

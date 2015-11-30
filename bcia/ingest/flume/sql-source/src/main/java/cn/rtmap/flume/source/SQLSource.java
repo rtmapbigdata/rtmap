@@ -20,6 +20,8 @@ import org.apache.flume.event.SimpleEvent;
 import org.apache.flume.source.AbstractSource;
 
 import cn.rtmap.flume.metrics.SqlSourceCounter;
+import cn.rtmap.flume.scheduler.MyJob;
+import cn.rtmap.flume.scheduler.SimpleScheduler;
 import cn.rtmap.flume.ha.ElectionListener;
 import cn.rtmap.flume.ha.Master;
 
@@ -44,6 +46,12 @@ public class SQLSource extends AbstractSource implements Configurable, PollableS
 
     private Master m;
     private ElectionListener listener;
+
+    private MyJob job;
+    private SimpleScheduler sch;
+    private static final int DEFAULT_SLEEP_INTERVAL = 1 * 1000;
+    
+    private static String incrIndex;
 
     /**
      * Configure the source, load configuration properties and establish connection with database
@@ -73,6 +81,11 @@ public class SQLSource extends AbstractSource implements Configurable, PollableS
 
         m = new Master(zkHosts, zkNodePath, zkTimeout);
         listener = new ElectionListener(m);
+
+        job = new MyJob();
+        sch = new SimpleScheduler();
+        
+        incrIndex = "";
     }
 
     /**
@@ -80,7 +93,7 @@ public class SQLSource extends AbstractSource implements Configurable, PollableS
      */
     @Override
     public Status process() throws EventDeliveryException {
-        if (m.isLeader() && !listener.isTerminated()) {
+        if (m.isLeader() && !listener.isTerminated() && job.isTriggered()) {
             try {
                 String maxValue = dbHelper.GetLastRowIndex();
                 if (maxValue != null) {
@@ -91,6 +104,7 @@ public class SQLSource extends AbstractSource implements Configurable, PollableS
                     String currIndex = sqlSourceHelper.getCurrentIndex();
 
                     if (!result.isEmpty()) {
+                    	incrIndex = maxValue;
                         csvWriter.writeAll(sqlSourceHelper.getAllRows(result));
                         csvWriter.flush();
 
@@ -100,7 +114,7 @@ public class SQLSource extends AbstractSource implements Configurable, PollableS
                     }
                     sqlSourceCounter.endProcess(result.size());
                 }
-                Thread.sleep(sqlSourceHelper.getRunQueryDelay());
+                Thread.sleep(DEFAULT_SLEEP_INTERVAL);
                 return Status.READY;
             } catch (IOException | InterruptedException e) {
                 LOG.error("Error procesing row", e);
@@ -130,6 +144,7 @@ public class SQLSource extends AbstractSource implements Configurable, PollableS
 
         // identify leader
         listener.start();
+        sch.scheduleJob(sqlSourceHelper.getCornScheduleExpress(), sqlSourceHelper.getCornScheduleJobKey(), sqlSourceHelper.getCornScheduleTriggerKey());
     }
 
     /**
@@ -193,6 +208,7 @@ public class SQLSource extends AbstractSource implements Configurable, PollableS
             Map<String, String> headers;
             headers = new HashMap<String, String>();
             headers.put("type", "log");
+            headers.put("index", incrIndex);
             headers.put("timestamp", String.valueOf(System.currentTimeMillis()));
 
             event.setHeaders(headers);
