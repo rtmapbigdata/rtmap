@@ -293,6 +293,7 @@ public class SFTPOperator {
     	
     	String path = filePath.substring(0, filePath.lastIndexOf("/"));
     	//System.out.println(path);
+    	LOG.info("file path: " + path);
     	sftp.cd(path);
     	
     	String fileName = filePath.substring(filePath.lastIndexOf("/") +1, filePath.length());
@@ -302,6 +303,7 @@ public class SFTPOperator {
 
     	//System.out.println("file:" + fileNamex);
     	ByteArrayOutputStream out = new ByteArrayOutputStream();
+    	LOG.info("file name: " + fileName);
     	sftp.get(fileName, out);
 
     	byte[] bytes = out.toByteArray();

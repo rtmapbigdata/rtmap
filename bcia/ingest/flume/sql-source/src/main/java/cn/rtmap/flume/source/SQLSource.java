@@ -120,6 +120,7 @@ public class SQLSource extends AbstractSource implements Configurable, PollableS
                 LOG.error("Error procesing row", e);
                 return Status.BACKOFF;
             } finally {
+            	job.setSignal(false);
                 dbHelper.close();
             }
         } else {

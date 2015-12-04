@@ -47,7 +47,7 @@ public class SFTPSource extends AbstractSource implements Configurable, Pollable
 				for (DataFile df : dfs) {
 					if (!dirList.contains(df.getFilePath())) {
 						dirList.add(df.getFilePath());
-						ftp.backup(df.getFilePath());
+						//ftp.backup(df.getFilePath());
 					}
 					
 					try {
@@ -59,6 +59,10 @@ public class SFTPSource extends AbstractSource implements Configurable, Pollable
 						if (csvWriter != null)
 							csvWriter.close();
 					}
+				}
+				
+				for (String dir : dirList) {
+					ftp.backup(dir);
 				}
 				job.setSignal(false);
 			}
