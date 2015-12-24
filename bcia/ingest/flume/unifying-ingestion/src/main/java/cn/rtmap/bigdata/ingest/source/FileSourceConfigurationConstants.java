@@ -10,6 +10,7 @@ public final class FileSourceConfigurationConstants {
   public static final String  CONFIG_INCOMING_DIR = "incoming.dir";
   public static final String  CONFIG_OUTGOING_DIR = "outgoing.dir";
   public static final String  CONFIG_BACKUP_DIR   = "backup.dir";
+  public static final String  CONFIG_DATA_FROM   = "data.from";
 
   // Event delimiter.  When character is encountered
   // in the incoming data stream, a new event will be

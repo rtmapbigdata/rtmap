@@ -3,6 +3,7 @@ package cn.rtmap.bigdata.ingest.impl;
 public class HeaderConstants {
 	
 	public static final String DEF_MODE = "mode";
+	public static final String DEF_FROM = "from";
 	public static final String DEF_UNIT_CODE = "unit_code";
 	public static final String DEF_PROCESS_DATE = "process_date";
 

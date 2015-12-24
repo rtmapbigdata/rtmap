@@ -30,6 +30,7 @@ public class FileManager {
 	private String compressFile;
 	private String dataFile;
 	private String fileDate;
+	private String from;
 
 	Queue<String> queue;
 	static final int BUFFER = 2048;
@@ -40,6 +41,8 @@ public class FileManager {
 		//outgoingDir = ctx.getString(FileSourceConfigurationConstants.CONFIG_OUTGOING_DIR);
 		bakDir = ctx.getString(FileSourceConfigurationConstants.CONFIG_BACKUP_DIR);
 		verfExt = ctx.getString(FileSourceConfigurationConstants.CONFIG_VERF_EXTENSION);
+		from = ctx.getString(FileSourceConfigurationConstants.CONFIG_DATA_FROM);
+		//fileSource = ctx.getString(FileSourceConfigurationConstants);
 
 /*		incomingDir = "d:\\dev2\\ingest\\incoming\\lbs";
 		//outgoingDir = "d:\\dev2\\ingest\\outgoing\\lbs";
@@ -113,6 +116,7 @@ public class FileManager {
 		if (toks.length >= 3) {
 			fileDate = toks[1];
 			map.put(HeaderConstants.DEF_MODE, HeaderConstants.VAL_MODE_DATA);
+			map.put(HeaderConstants.DEF_FROM, from);
 			map.put(HeaderConstants.DEF_UNIT_CODE, toks[2].split("\\.")[0]);
 			map.put(HeaderConstants.DEF_PROCESS_DATE, fileDate);
 			map.put(HeaderConstants.DEF_FILENAME, fileName);
