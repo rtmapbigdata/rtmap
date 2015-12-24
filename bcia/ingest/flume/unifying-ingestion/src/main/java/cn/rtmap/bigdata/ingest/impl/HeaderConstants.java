@@ -6,6 +6,7 @@ public class HeaderConstants {
 	public static final String DEF_FROM = "from";
 	public static final String DEF_UNIT_CODE = "unit_code";
 	public static final String DEF_PROCESS_DATE = "process_date";
+	public static final String DEF_PROCESS_MONTH = "process_month";
 
 	public static final String DEF_FILENAME = "filename";
 	public static final String DEF_ROW_NUM = "row_num";

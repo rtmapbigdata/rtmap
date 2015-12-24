@@ -118,7 +118,10 @@ public class FileManager {
 			map.put(HeaderConstants.DEF_MODE, HeaderConstants.VAL_MODE_DATA);
 			map.put(HeaderConstants.DEF_FROM, from);
 			map.put(HeaderConstants.DEF_UNIT_CODE, toks[2].split("\\.")[0]);
+			// YYYYMMDD
 			map.put(HeaderConstants.DEF_PROCESS_DATE, fileDate);
+			// YYYYMM
+			map.put(HeaderConstants.DEF_PROCESS_MONTH, fileDate.substring(0, "YYYYMM".length()));
 			map.put(HeaderConstants.DEF_FILENAME, fileName.substring(0, fileName.lastIndexOf(".")));
 		}
 		return map;

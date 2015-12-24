@@ -12,7 +12,7 @@ import cn.rtmap.bigdata.ingest.impl.HeaderConstants;
 
 public class EventSerializer extends AbstractFlumeInterceptor {
 
-	final static String COLUMNS = String.format("%s %s %s %s %s %s", HeaderConstants.DEF_FROM, HeaderConstants.DEF_UNIT_CODE, HeaderConstants.DEF_PROCESS_DATE, HeaderConstants.DEF_FILENAME, HeaderConstants.DEF_BATCH_ID, HeaderConstants.DEF_COMPRESS);
+	final static String COLUMNS = String.format("%s %s %s %s %s %s %s", HeaderConstants.DEF_FROM, HeaderConstants.DEF_UNIT_CODE, HeaderConstants.DEF_PROCESS_MONTH, HeaderConstants.DEF_PROCESS_DATE, HeaderConstants.DEF_FILENAME, HeaderConstants.DEF_BATCH_ID, HeaderConstants.DEF_COMPRESS);
 	final static String BODY = "body";
 	final static String HEADERS = "headers";
 	final static String DELIMITER = " ";
