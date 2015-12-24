@@ -119,7 +119,7 @@ public class FileManager {
 			map.put(HeaderConstants.DEF_FROM, from);
 			map.put(HeaderConstants.DEF_UNIT_CODE, toks[2].split("\\.")[0]);
 			map.put(HeaderConstants.DEF_PROCESS_DATE, fileDate);
-			map.put(HeaderConstants.DEF_FILENAME, fileName);
+			map.put(HeaderConstants.DEF_FILENAME, fileName.substring(0, fileName.lastIndexOf(".")));
 		}
 		return map;
 	}
