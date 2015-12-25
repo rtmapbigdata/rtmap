@@ -9,9 +9,9 @@ public final class DBConfigConstants {
 	public static final String CONFIG_CONNECTION_PASSWORD = "db.password";
 	public static final String CONFIG_CRON_EXPRESS        = "cron.express";
 	public static final String CONFIG_QUERY_KEYPRE        = "table.";
-	public static final String CONFIG_QUERY_STARTDATE     = "field_start_date";
-	public static final String CONFIG_QUERY_ENDDATE       = "field_end_date";
-	public static final String CONFIG_DB_CONFS     = "db.conf";
+	public static final String CONFIG_QUERY_STARTDATE     = "rpfield_start_date";
+	public static final String CONFIG_QUERY_ENDDATE       = "rpfield_end_date";
+	public static final String CONFIG_DB_CONFS            = "db.conf";
 	
 	private DBConfigConstants() {
 		// Disable explicit creation of objects.
