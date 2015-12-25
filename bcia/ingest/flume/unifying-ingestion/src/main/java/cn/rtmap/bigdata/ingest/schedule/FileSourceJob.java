@@ -7,15 +7,18 @@ import org.apache.flume.Context;
 import org.apache.flume.Event;
 import org.apache.flume.channel.ChannelProcessor;
 import org.apache.flume.event.EventBuilder;
+
 import org.quartz.Job;
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
+import org.quartz.DisallowConcurrentExecution;
 
 import cn.rtmap.bigdata.ingest.base.Extractor;
 import cn.rtmap.bigdata.ingest.base.JsonElement;
 import cn.rtmap.bigdata.ingest.impl.FileExtractor;
 
+@DisallowConcurrentExecution
 public class FileSourceJob implements Job {
 	@Override
 	public void execute(JobExecutionContext context) throws JobExecutionException {

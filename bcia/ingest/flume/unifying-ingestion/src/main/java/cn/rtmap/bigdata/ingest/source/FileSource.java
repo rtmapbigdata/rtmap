@@ -19,7 +19,9 @@ public class FileSource extends AbstractSource implements EventDrivenSource, Con
 	@Override
 	public void start() {
 		JobDataMap dataMap = new JobDataMap();
-		dataMap.put("cron_express", "*/30 * * * * ? *");
+		String cronExpress = ctx.getString("schedule.express");
+		dataMap.put("cron_express", cronExpress);
+		//dataMap.put("cron_express", "*/30 * * * * ? *");
 		dataMap.put("context", ctx);
 		dataMap.put("channel", getChannelProcessor());
 

@@ -17,7 +17,7 @@ public class BatchPackager extends AbstractFlumeInterceptor {
 	static final String CONFIG_BATCH_SIZE = "batchSize";
 	static final String CONFIG_ROW_DELIMITER = "rowDelimiter";
 	
-	static final int DEFAULT_BATCH_SIZE = 5000;
+	static final int DEFAULT_BATCH_SIZE = 256;
 	static final String DEFAULT_ROW_DELIMITER = "\n";
 	StringBuffer buf;
 

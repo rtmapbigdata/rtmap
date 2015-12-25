@@ -3,12 +3,10 @@ package cn.rtmap.bigdata.ingest.source;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.NetworkInterface;
-
 import java.net.UnknownHostException;
 import java.net.SocketException;
-
 import java.io.ByteArrayOutputStream;
-
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -23,9 +21,9 @@ import org.apache.flume.FlumeException;
 import org.apache.flume.conf.Configurable;
 import org.apache.flume.conf.Configurables;
 import org.apache.flume.source.AbstractSource;
-
 import org.jboss.netty.bootstrap.ConnectionlessBootstrap;
 import org.jboss.netty.buffer.ChannelBuffer;
+import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.socket.DatagramChannel;
 import org.jboss.netty.channel.socket.DatagramChannelFactory;
@@ -37,7 +35,7 @@ import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelHandler;
 import org.jboss.netty.channel.socket.oio.OioDatagramChannelFactory;
 import org.jboss.netty.channel.FixedReceiveBufferSizePredictorFactory;
-
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,6 +53,8 @@ public class UDPSource extends AbstractSource implements EventDrivenSource, Conf
   private DatagramChannel nettyChannel;
 
   private static final Logger logger = LoggerFactory.getLogger(UDPSource.class);
+  final static String HEARTBEAT = "heartbeat";
+  final static String HEADERS = "headers";
 
   private CounterGroup counterGroup = new CounterGroup();
 
@@ -176,8 +176,21 @@ public class UDPSource extends AbstractSource implements EventDrivenSource, Conf
         if (e == null) {
           return;
         }
-        getChannelProcessor().processEvent(e);
-        counterGroup.incrementAndGet("events.success");
+        String msg = new String(e.getBody());
+        if (msg != null && msg.contains(HEARTBEAT)) {
+        	Map<String, String> map = new HashMap<String, String>();
+        	map.put(HEARTBEAT, String.valueOf(System.currentTimeMillis()));
+
+        	JSONObject obj = new JSONObject();
+        	obj.put(HEADERS, map);
+        	ChannelBuffer cb = ChannelBuffers.wrappedBuffer(obj.toString().getBytes());
+        	mEvent.getChannel().write(cb, mEvent.getRemoteAddress());
+        	logger.info("send heartbeat: " + msg);
+        } else {
+        	//logger.info("here :" + new String(e.getBody()));
+        	getChannelProcessor().processEvent(e);
+        	counterGroup.incrementAndGet("events.success");
+        }
       } catch (ChannelException ex) {
         counterGroup.incrementAndGet("events.dropped");
         logger.error("Error writting to channel", ex);
