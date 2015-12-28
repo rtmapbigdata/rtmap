@@ -8,15 +8,14 @@ import org.apache.flume.interceptor.Interceptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import cn.rtmap.bigdata.ingest.base.JsonElement;
-
+import cn.rtmap.bigdata.ingest.base.JsonElementBodyString;
 
 //import com.fasterxml.jackson.core.JsonParseException;
 //import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class EventDeserializer extends AbstractFlumeInterceptor {
-	static final Logger logger = LoggerFactory.getLogger(EventDeserializer.class);
+public class EventBodyStringDeserializer extends AbstractFlumeInterceptor {
+	static final Logger logger = LoggerFactory.getLogger(EventBodyStringDeserializer.class);
 	ObjectMapper mapper = new ObjectMapper();
 
 	@Override
@@ -29,7 +28,7 @@ public class EventDeserializer extends AbstractFlumeInterceptor {
 		ObjectMapper mapper = new ObjectMapper();
 
 		try {
-			JsonElement obj = mapper.readValue(src, JsonElement.class);
+			JsonElementBodyString obj = mapper.readValue(src, JsonElementBodyString.class);
 			event.setHeaders(obj.getHeaders());
 			event.setBody(obj.getBody());
 		} catch (IOException e) {
@@ -50,7 +49,7 @@ public class EventDeserializer extends AbstractFlumeInterceptor {
 
 		@Override
 		public Interceptor build() {
-			return new EventDeserializer();
+			return new EventBodyStringDeserializer();
 		}
 	}
 
