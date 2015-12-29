@@ -18,7 +18,8 @@ import org.slf4j.LoggerFactory;
 
 public class CronScheduler {
 	static final Logger logger = LoggerFactory.getLogger(CronScheduler.class);
-
+	static final int DEFAULT_THREAD_COUNT = 1;
+	
 	Random random = new Random(this.hashCode());
 	StdSchedulerFactory fac;
 	Scheduler sch;
@@ -28,7 +29,11 @@ public class CronScheduler {
 		fac = new StdSchedulerFactory();
 		props = new Properties();
 		String cexp = dataMap.getString("cron_express");
+
 		String threadCount = dataMap.getString("sched.threads");
+		if (threadCount == null) {
+			threadCount = String.valueOf(DEFAULT_THREAD_COUNT);
+		}
 
 		try {
 			props.put("org.quartz.scheduler.instanceName", String.format("sched_%s", Integer.toHexString(random.nextInt())));
