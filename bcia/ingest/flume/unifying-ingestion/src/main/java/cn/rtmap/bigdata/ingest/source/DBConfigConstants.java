@@ -13,6 +13,12 @@ public final class DBConfigConstants {
 	public static final String CONFIG_QUERY_ENDDATE       = "rpfield_end_date";
 	public static final String CONFIG_DB_CONFS            = "db.conf";
 	
+	public static final String  CONFIG_TMP_EXTENSION      = ".tmp";
+	public static final String  CONFIG_ZIP_EXTENSION      = ".zip";
+	public static final String  CONFIG_FILE_EXTENSION     = ".dat";
+	
+	public static final String  CONFIG_DEBUG              = "debugger";
+	
 	private DBConfigConstants() {
 		// Disable explicit creation of objects.
 	}

@@ -9,7 +9,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.flume.Context;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,6 +24,7 @@ public class DBExtractor {
 	Statement statement = null;
 	Map<String,String> querys = new HashMap<String,String>();
 	private String incomingDir = null;
+	boolean debugger = false;
 	
 	public void init(Context ctx,Properties properties) throws Exception{
 		String driver=properties.getProperty(DBConfigConstants.CONFIG_JDBC_DRIVER).trim();
@@ -39,9 +39,12 @@ public class DBExtractor {
 				querys.put(key.substring(DBConfigConstants.CONFIG_QUERY_KEYPRE.length()),properties.getProperty(key));
 			}
 		}
-		logger.info("Extractor " + querys.size() + " tables: " + properties.getProperty(DBConfigConstants.CONFIG_CONNECTION_URL));
 		incomingDir = properties.getProperty(FileSourceConfigurationConstants.CONFIG_INCOMING_DIR);
-		
+		String debug=properties.getProperty(DBConfigConstants.CONFIG_DEBUG);
+		if(debug != null && ("true".equals(debug) || "1".equals(debug))){
+			debugger=true;
+		}
+		logger.info("Extractor start with " + querys.size() + " tables: " + properties.getProperty(DBConfigConstants.CONFIG_CONNECTION_URL));
 	}
 	
 	public void extract() throws Exception {
@@ -52,23 +55,34 @@ public class DBExtractor {
 			String sql = querys.get(table)
 					.replaceAll(DBConfigConstants.CONFIG_QUERY_STARTDATE, yesterday+" 00:00:00")
 					.replaceAll(DBConfigConstants.CONFIG_QUERY_ENDDATE, today+" 00:00:00");
-			String fileName = table + "_" + yesterday + ".txt";
-			String filePath = incomingDir + "/" + fileName;
-			String tmpFile  = filePath + ".tmp";
-			logger.info(sql);
-			ResultSet rs = statement.executeQuery(sql);
-			SQLUtil.saveResultSetAsCSV(rs, tmpFile);
-			logger.info(tmpFile);
-			File srcFile = new File(tmpFile);
-			if(srcFile.exists()){
-				File destFile = new File(filePath);
-				if(destFile.exists()){
-					logger.warn("extract file cannot be upload,will be replaced: " + filePath);
-					destFile.deleteOnExit();
-				}
-				srcFile.renameTo(new File(filePath));
+			if(debugger){
+				sql += " limit 10";
+			}
+			//file name
+			String fileName = yesterday.replaceAll("-", "") +  "_" + table.replaceAll("_", "-");
+			if(querys.get(table).contains(DBConfigConstants.CONFIG_QUERY_STARTDATE)){
+				fileName = "a_" + fileName;
 			}else{
-				logger.error("table extract fail,file not exist: " + table);
+				fileName = "i_" + fileName;
+			}
+			String filePath = incomingDir + "/" + yesterday.replaceAll("-", "") + "/day/" + fileName;
+			String tmpFile  = filePath + DBConfigConstants.CONFIG_TMP_EXTENSION;
+			ResultSet rs = null;
+			try {
+				logger.info("start sql: " + sql);
+				rs = statement.executeQuery(sql);
+				boolean succ = SQLUtil.saveResultSetAsCSV(rs, tmpFile);
+				if(succ){
+					SQLUtil.createVerfFile(new File(tmpFile), fileName+DBConfigConstants.CONFIG_FILE_EXTENSION, 
+							filePath+FileSourceConfigurationConstants.DEFAULT_VERF_EXTENSION);
+					SQLUtil.zipFile(tmpFile,filePath+DBConfigConstants.CONFIG_ZIP_EXTENSION,true);
+				}
+				//new File(tmpFile).deleteOnExit();
+				logger.info("finish sql: "+ filePath);
+			} catch (Exception e) {
+				logger.error("Table Extract Fail >>> " + table,e);
+			}finally{
+				if(rs != null){rs.close();}
 			}
 		}
 	}
