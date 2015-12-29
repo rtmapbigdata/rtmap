@@ -31,6 +31,8 @@ import cn.rtmap.bigdata.ingest.utils.HexStringUtil;
 public class PositionDataService {
 	private static final int BATCH_LINES = 1024 * 100;
 	private static final String SUFFIX_CSV = ".csv";
+	private static final String UNIT_CODE = "nps";
+	private static final String SRC_FROM = "lbs";
     private static final Logger LOG = LoggerFactory.getLogger(PositionDataService.class);
 
     public void sendFiles(String root, String date, String buildid, String url) throws IOException {
@@ -154,8 +156,8 @@ public class PositionDataService {
     	    	obj.put("body", hexStr);
 
     	    	map.put(HeaderConstants.DEF_MODE, HeaderConstants.VAL_MODE_DATA);
-    	    	map.put(HeaderConstants.DEF_FROM, "lbs");
-    	    	map.put(HeaderConstants.DEF_UNIT_CODE, "net");
+    	    	map.put(HeaderConstants.DEF_FROM, SRC_FROM);
+    	    	map.put(HeaderConstants.DEF_UNIT_CODE, UNIT_CODE);
 
     	    	String yyyymmdd = date.replace("-", "");
     	    	map.put(HeaderConstants.DEF_PROCESS_MONTH, yyyymmdd.substring(0, "YYYYMM".length()));
