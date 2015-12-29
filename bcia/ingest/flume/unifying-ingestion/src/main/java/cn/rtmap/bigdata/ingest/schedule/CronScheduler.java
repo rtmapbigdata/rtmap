@@ -1,5 +1,6 @@
 package cn.rtmap.bigdata.ingest.schedule;
 
+import java.util.Properties;
 import java.util.Random;
 
 import org.quartz.CronScheduleBuilder;
@@ -9,7 +10,6 @@ import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
-import org.quartz.SchedulerFactory;
 import org.quartz.Trigger;
 import org.quartz.TriggerBuilder;
 import org.quartz.impl.StdSchedulerFactory;
@@ -20,14 +20,21 @@ public class CronScheduler {
 	static final Logger logger = LoggerFactory.getLogger(CronScheduler.class);
 
 	Random random = new Random(this.hashCode());
-	SchedulerFactory fac;
+	StdSchedulerFactory fac;
 	Scheduler sch;
+	Properties props;
 
 	public void start(Class <? extends Job> jobClass, JobDataMap dataMap) {
 		fac = new StdSchedulerFactory();
+		props = new Properties();
 		String cexp = dataMap.getString("cron_express");
+		String threadCount = dataMap.getString("sched.threads");
 
 		try {
+			props.put("org.quartz.scheduler.instanceName", String.format("sched_%s", Integer.toHexString(random.nextInt())));
+			props.put("org.quartz.threadPool.threadCount", threadCount);
+			fac.initialize(props);
+
 			sch = fac.getScheduler();
 			String jobId = String.format("Job_%s", Integer.toHexString( random.nextInt() ));
 			String triggerId = String.format("Trigger_%s", Integer.toHexString( random.nextInt() ));

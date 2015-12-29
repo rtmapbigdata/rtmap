@@ -13,7 +13,7 @@ public class PositionAgentDaemon {
         PositionDataService service = new PositionDataService();
 
         Properties pro = new Properties();
-        pro.load(new FileInputStream("/config.properties"));
+        pro.load(new FileInputStream("/c:/agent/config.properties"));
         String[] dirs = pro.getProperty("dirs").split(",");
         String url = pro.getProperty("url");
 
@@ -29,6 +29,7 @@ public class PositionAgentDaemon {
             LOG.info("################################################################");
             try {
                 service.sendFiles(bidDir, date, buildid, url);
+                //System.out.println(url);
             	//service.sendFiles(bidDir, "2015-08-26", buildid, url);
             } catch (Exception e) {
                 e.printStackTrace();

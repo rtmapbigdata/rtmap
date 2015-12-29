@@ -22,7 +22,6 @@ public class FileManager {
 	private static final Logger logger = LoggerFactory.getLogger(FileManager.class);
 
 	private String incomingDir;
-	//private String outgoingDir;
 	private String bakDir;
 	private String verfExt;
 
@@ -36,19 +35,10 @@ public class FileManager {
 	static final int BUFFER = 2048;
 
 	public FileManager(Context ctx) {
-
 		incomingDir = ctx.getString(FileSourceConfigurationConstants.CONFIG_INCOMING_DIR);
-		//outgoingDir = ctx.getString(FileSourceConfigurationConstants.CONFIG_OUTGOING_DIR);
 		bakDir = ctx.getString(FileSourceConfigurationConstants.CONFIG_BACKUP_DIR);
 		verfExt = ctx.getString(FileSourceConfigurationConstants.CONFIG_VERF_EXTENSION);
 		from = ctx.getString(FileSourceConfigurationConstants.CONFIG_DATA_FROM);
-		//fileSource = ctx.getString(FileSourceConfigurationConstants);
-
-/*		incomingDir = "d:\\dev2\\ingest\\incoming\\lbs";
-		//outgoingDir = "d:\\dev2\\ingest\\outgoing\\lbs";
-		bakDir = "d:\\dev2\\ingest\\bak\\lbs";
-		verfExt = ".verf";
-*/
 		queue = new Queue<String>();
 		getFileList();
 	}
@@ -173,17 +163,5 @@ public class FileManager {
 				}
 			}
 		}
-
-		//System.out.println(result);
 	}
-
-/*
-	public static void main(String[] args) {
-		FileManager fmgr = new FileManager();
-		logger.info("File count:" + fmgr.getFileCount());
-		logger.info("Last data file:" + fmgr.nextFile());
-		fmgr.getFileHeader();
-		fmgr.backupFile();
-	}
-*/
 }
