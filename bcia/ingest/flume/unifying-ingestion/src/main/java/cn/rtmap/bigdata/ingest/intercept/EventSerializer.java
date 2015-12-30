@@ -14,25 +14,28 @@ import cn.rtmap.bigdata.ingest.impl.HeaderConstants;
 
 public class EventSerializer extends AbstractFlumeInterceptor {
 	static final Logger logger = LoggerFactory.getLogger(EventSerializer.class);
-	final static String COLUMNS = String.format("%s %s %s %s %s %s %s", HeaderConstants.DEF_FROM, HeaderConstants.DEF_UNIT_CODE, HeaderConstants.DEF_PROCESS_MONTH, HeaderConstants.DEF_PROCESS_DATE, HeaderConstants.DEF_FILENAME, HeaderConstants.DEF_BATCH_ID, HeaderConstants.DEF_COMPRESS);
+	final static String COLUMNS = String.format("%s %s %s %s %s %s %s %s", HeaderConstants.DEF_TIMESTAMP, HeaderConstants.DEF_FROM, HeaderConstants.DEF_UNIT_CODE, HeaderConstants.DEF_PROCESS_MONTH, HeaderConstants.DEF_PROCESS_DATE, HeaderConstants.DEF_FILENAME, HeaderConstants.DEF_BATCH_ID, HeaderConstants.DEF_COMPRESS);
 	final static String BODY = "body";
 	final static String HEADERS = "headers";
 	final static String DELIMITER = " ";
 
-	//String columns;
-	//String body;
+	static Context ctx;
+	String columns;
 
 	@Override
 	public void initialize() {
-		//body = BODY;
-		//columns = COLUMNS;
+		if (ctx != null) {
+			columns = ctx.getString("columns", COLUMNS);
+		} else {
+			columns = COLUMNS;
+		}
 	}
 
 	@Override
 	public Event intercept(Event e) {
 		Map<String, String> headers = e.getHeaders();
 		Map<String, String> map = new HashMap<String, String>();
-		String[] toks = COLUMNS.split(DELIMITER);
+		String[] toks = columns.split(DELIMITER);
 		for (String key : toks) {
 			String val = headers.get(key);
 			if (val != null) {
@@ -50,27 +53,13 @@ public class EventSerializer extends AbstractFlumeInterceptor {
 		return e;
 	}
 
-//	@Override
-//	public List<Event> intercept(List<Event> events) {
-//		for (Iterator<Event> it = events.iterator(); it.hasNext();) {
-//			Event next = intercept(it.next());
-//			if (next == null) {
-//				it.remove();
-//			}
-//		}
-//		return events;
-//	}
-
 	@Override
-	public void close() {
-		// NOPE
-		
-	}
+	public void close() {}
 
 	public static class Builder implements Interceptor.Builder {
 		@Override
 		public void configure(Context context) {
-			// NOPE
+			ctx = context;
 		}
 
 		@Override
