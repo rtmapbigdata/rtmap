@@ -17,6 +17,7 @@ public class UDPBusinessHeadersAppender extends AbstractFlumeInterceptor {
 	static final String HEADER_DATA_TIME = "data_time";
 	static final String HEADER_TIMESTAMP = "timestamp";
 	static final String HEADER_FIELD_SEPARATOR = "#";
+	static final String HEADER_VAL_FROM = "lbs_online";
 
 	@Override
 	public void initialize() {}
@@ -58,6 +59,7 @@ public class UDPBusinessHeadersAppender extends AbstractFlumeInterceptor {
 //				map.put(HeaderConstants.DEF_FILENAME, fileName);
 //			}
 			map.put(HeaderConstants.DEF_MODE, HeaderConstants.VAL_MODE_DATA);
+			map.put(HeaderConstants.DEF_FROM, HEADER_VAL_FROM);
 		}
 		return event;
 	}
