@@ -29,11 +29,13 @@ import cn.rtmap.bigdata.ingest.utils.Compressor;
 import cn.rtmap.bigdata.ingest.utils.HexStringUtil;
 
 public class PositionDataService {
-	private static final int BATCH_LINES = 1024 * 100;
+	private static final Logger LOG = LoggerFactory.getLogger(PositionDataService.class);
+
+	private static final int BATCH_LINES = 1024;
 	private static final String SUFFIX_CSV = ".csv";
 	private static final String UNIT_CODE = "nps";
 	private static final String SRC_FROM = "lbs";
-    private static final Logger LOG = LoggerFactory.getLogger(PositionDataService.class);
+	private static final int SLEEP_TIME = 100;
 
     public void sendFiles(String root, String date, String buildid, String url) throws IOException {
         File bids = new File(root);
@@ -120,8 +122,7 @@ public class PositionDataService {
                 bf = false;
             }
         }
-        //LOG.info("zip files : " + count);
-        //System.out.println("zip files : " + count);
+        LOG.info("zip files : " + count);
         zipOut.close();
         out.close();
         return bf;
@@ -171,7 +172,8 @@ public class PositionDataService {
     	    	arr.put(0, obj);
 
     	    	postData(arr.toString(), url);
-    		} catch (IOException e) {
+    	    	Thread.sleep(SLEEP_TIME);
+    		} catch (IOException | InterruptedException e) {
     			LOG.error("Read file content failed", e);
     			return;
     		}
