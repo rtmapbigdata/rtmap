@@ -19,6 +19,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -89,7 +90,52 @@ public class SQLUtil {
         }
         return bf;
     }
-    
+    /**
+     * 压缩文件
+     *
+     * @param file
+     * @param zipfile
+     * @return
+     * @throws Exception
+     */
+    public static boolean zipFile(File file, String zipfile) throws Exception {
+        boolean bf = true;
+        if (!file.exists()) {
+        	logger.error("file to zip not exist : " + file.getName());
+            return true;
+        }
+        File destfile = new File(zipfile);
+        if (destfile.exists()) {
+        	logger.info("zip file have existed,delete finish!");
+        	destfile.delete();
+        	destfile=null;
+        }
+        new File(zipfile).createNewFile();
+        FileOutputStream out = null;
+        ZipOutputStream zipOut = null;
+        FileInputStream in = null;
+        try {
+        	out = new FileOutputStream(zipfile);
+            zipOut = new ZipOutputStream(out);
+            in = new FileInputStream(file);
+            ZipEntry entry = new ZipEntry(file.getName());
+            zipOut.putNextEntry(entry);
+            // 向压缩文件中输出数据
+            int nNumber = 0;
+            byte[] buffer = new byte[4096];
+            while ((nNumber = in.read(buffer)) != -1) {
+                zipOut.write(buffer, 0, nNumber);
+            }
+        } catch (IOException e) {
+        	bf = false;
+            throw e;
+        }finally{
+        	IOUtils.closeQuietly(in);
+        	IOUtils.closeQuietly(zipOut);
+        	IOUtils.closeQuietly(out);
+        }
+        return bf;
+    }
 	public static boolean saveResultSetAsCSV(ResultSet rs, String fileName) throws Exception {
 		if(rs == null || fileName == null){
 			logger.error("Save ResultSet As CSV Error: ResultSet or fileName is null");
