@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
-
 import org.apache.log4j.Logger;
 
 public class PositionAgentDaemon {
@@ -22,7 +21,7 @@ public class PositionAgentDaemon {
 		}
 
         String[] dirs = pro.getProperty("dirs").split(",");
-        String url = pro.getProperty("url");
+        String[] urls = pro.getProperty("urls").split(",");
 
         String buildid = null;
         String date = null;
@@ -38,7 +37,7 @@ public class PositionAgentDaemon {
             	LOG.info("lookup config dir : " + bidDir);
             	File f = new File(bidDir);
             	if (f.exists()) {
-            		service.sendFiles(bidDir, date, buildid, url);
+            		service.sendFiles(bidDir, date, buildid, urls);
             	} else {
             		LOG.error("dir not exists: " + bidDir);
             	}

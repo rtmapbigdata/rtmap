@@ -45,7 +45,7 @@ public class Constants {
      */
     static class Loader {
         private static Properties properties = new Properties();
-        private static final String CONFIG_PATH = "/config.properties";
+        private static final String CONFIG_PATH = "/ftp-config.properties";
 
         /**
          * load configurations while system start
