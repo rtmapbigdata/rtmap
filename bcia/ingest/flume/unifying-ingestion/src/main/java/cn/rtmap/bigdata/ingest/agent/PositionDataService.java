@@ -12,6 +12,7 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.io.BufferedReader;
+import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
@@ -28,12 +29,13 @@ import org.slf4j.LoggerFactory;
 import cn.rtmap.bigdata.ingest.impl.HeaderConstants;
 import cn.rtmap.bigdata.ingest.utils.Compressor;
 import cn.rtmap.bigdata.ingest.utils.HexStringUtil;
+import cn.rtmap.bigdata.ingest.utils.ZipUtil;
 
 public class PositionDataService {
 	private static final Logger LOG = LoggerFactory.getLogger(PositionDataService.class);
 	private static final Random rand = new Random();
 
-	private static final int BATCH_LINES = 1024 * 5;
+	private static final int BATCH_LINES = 1024 * 10;
 	private static final String SUFFIX_CSV = ".csv";
 	private static final String UNIT_CODE = "nps";
 	private static final String SRC_FROM = "lbs";
@@ -62,6 +64,7 @@ public class PositionDataService {
                         continue;
                     }
                     LOG.info("date : " + dateDir.getName());
+                    unZipIfExists(dateDir.getAbsolutePath());
                     for (File dataFile : dateDir.listFiles()) {
                     	if (dataFile.isFile() && dataFile.getName().endsWith(SUFFIX_CSV)) {
                     		idx = rand.nextInt(urls.length);
@@ -83,6 +86,24 @@ public class PositionDataService {
             } catch (Exception e) {
                 e.printStackTrace();
             }
+        }
+    }
+
+    private void unZipIfExists(String dir) {
+        FileFilter filter = new FileFilter() {
+            public boolean accept(File file) {
+                if (file.getName().endsWith(".zip")) {
+                    return true;
+                }
+                return false;
+            }
+        };
+
+        for (File f : new File(dir).listFiles(filter)) {
+        	if (f.isFile()) {
+        		LOG.info("unzip file:" + f.getAbsolutePath());
+        		ZipUtil.unzip(f.getAbsolutePath(), dir, true);
+        	}
         }
     }
 
