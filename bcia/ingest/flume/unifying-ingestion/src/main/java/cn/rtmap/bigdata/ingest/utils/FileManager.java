@@ -33,6 +33,8 @@ public class FileManager {
 
 	Queue<String> queue;
 	static final int BUFFER = 2048;
+	static final String STATUS_PENDING = "PENDING";
+	static final String STATUS_DONE = "COMPLETED";
 
 	public FileManager(Context ctx) {
 		incomingDir = ctx.getString(FileSourceConfigurationConstants.CONFIG_INCOMING_DIR);
@@ -58,10 +60,62 @@ public class FileManager {
 			compressFile = ruleFile.replaceFirst(verfExt, ".zip");
 			dataFile = decompress(compressFile);
 			logger.info("picked up file: " + dataFile);
+			markProgressAsPending();
 			return dataFile;
 		} else {
 			return null;
 		}
+	}
+
+	private void markProgressAsPending() {
+		String dest = String.format("%s.%s", ruleFile, STATUS_PENDING);
+		if (!ruleFile.endsWith(STATUS_PENDING) && rename(ruleFile, dest)) {
+			ruleFile = dest;
+		}
+
+		String dest2 = String.format("%s.%s", compressFile, STATUS_PENDING);
+		if (!compressFile.endsWith(STATUS_PENDING) && rename(compressFile, dest2)) {
+			compressFile = dest2;
+		}
+	}
+
+	private void markProgressAsCompleted() {
+		if (ruleFile.endsWith(STATUS_PENDING)) {
+			String dest = replaceLast(ruleFile, STATUS_PENDING, STATUS_DONE);
+			if (rename(ruleFile, dest)) {
+				ruleFile = dest;
+			}
+		}
+
+		if (compressFile.endsWith(STATUS_PENDING)) {
+			String dest = replaceLast(compressFile, STATUS_PENDING, STATUS_DONE);
+			if (rename(compressFile, dest)) {
+				compressFile = dest;
+			}
+		}
+	}
+
+	private String replaceLast(String string, String from, String to) {
+		int lastIndex = string.lastIndexOf(from);
+		if (lastIndex < 0) return string;
+		String tail = string.substring(lastIndex).replaceFirst(from, to);
+		return string.substring(0, lastIndex) + tail;
+	}
+
+	private boolean rename(String fullName, String newName) {
+		File file = new File(fullName);
+		if (file.exists()) {
+			File dest = new File(newName);
+			if (dest.exists()) {
+				dest.delete();
+			}
+			if (file.renameTo(dest)) {
+				return true;
+			} else {
+				logger.error("rename file failed: " + fullName);
+			}
+		}
+		return false;
 	}
 
 	private String decompress(String compressFile) {
@@ -118,6 +172,7 @@ public class FileManager {
 	}
 
 	public void backupFile() {
+		markProgressAsCompleted();
 		String srcDir = String.format("%s%s%s%s%s", incomingDir, File.separator, fileDate, File.separator, "day");
         String dstDir = String.format("%s%s%s%s%s", bakDir, File.separator, fileDate, File.separator, "day");
         boolean result = false;
@@ -164,4 +219,15 @@ public class FileManager {
 			}
 		}
 	}
+	
+//	public static void main(String[] args) {
+//		String fileName = "C:\\merged\\201511\\20151128\\i_20151128_tps.dat";
+//		String newName = String.format("%s.%s", fileName, "PENDING");
+//		if (rename(fileName, newName)) {
+//			System.out.println("renaming succeed");
+//		}
+//		
+//		String tmp = replaceLast("C:\\merged\\201511\\20151128\\i_20151128_tps.dat.PENDING", "PENDING", "COMPLETED");
+//		System.out.println(tmp);
+//	}
 }
