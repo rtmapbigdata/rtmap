@@ -29,7 +29,6 @@ import cn.rtmap.bigdata.ingest.constant.CommonConstants;
 import cn.rtmap.bigdata.ingest.constant.RuianConstants;
 import cn.rtmap.bigdata.ingest.utils.DateUtils;
 import cn.rtmap.bigdata.ingest.utils.IngestUtil;
-import cn.rtmap.bigdata.ingest.utils.MailSender;
 
 /**
  * Extractor data
@@ -94,7 +93,7 @@ public class RuianGetExtractor implements Extractor {
 			InputStreamReader isr = null;
 			BufferedReader br = null;
 			try {
-				URL url = new URL("/getrelatedid?startTime="+startTime+"&endTime="+endTime);
+				URL url = new URL("https://sso.run.com:8443/exchanger/getrelatedid?startTime="+startTime+"&endTime="+endTime);
 				HttpURLConnection con = (HttpURLConnection) url.openConnection();
 				con.setRequestMethod("GET");
 				con.setDoOutput(true);
