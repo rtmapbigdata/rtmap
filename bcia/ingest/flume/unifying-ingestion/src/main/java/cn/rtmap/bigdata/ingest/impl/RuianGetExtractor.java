@@ -35,7 +35,7 @@ import cn.rtmap.bigdata.ingest.utils.IngestUtil;
  */
 public class RuianGetExtractor implements Extractor {
 	static final Logger logger = LoggerFactory.getLogger(RuianGetExtractor.class);
-	String incoming = null;
+	static String incoming = null;
 	int beforeDays = 6;
 	static StringBuffer detailLog = new StringBuffer();
 	static boolean stat = false;
@@ -224,15 +224,15 @@ public class RuianGetExtractor implements Extractor {
 	}
 
 	public static void main(String[] args){
-		String reqDate=null;
-		if(args != null && args.length>0){
-			reqDate=args[0];
-		}
+		String reqDate=args.length>0?args[0]:null;
+		incoming=args.length>1?args[1]:"/mnt/data/share/ingest/incoming/ruian";
+		System.out.println("parameter: date="+reqDate+", incoming="+incoming);
+		
 		RuianGetExtractor extractor=new RuianGetExtractor();
 		stat=extractor.extract(reqDate);
 		extractor.cleanup();
-		logger.info("ruian extract "+(stat?"success":"fail"));
-		logger.info(detailLog.toString());
+		System.out.println("ruian extract "+(stat?"success":"fail"));
+		System.out.println(detailLog.toString());
 	}
 
 }
