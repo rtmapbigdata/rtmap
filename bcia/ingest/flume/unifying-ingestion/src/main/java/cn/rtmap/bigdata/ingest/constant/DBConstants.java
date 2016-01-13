@@ -1,6 +1,6 @@
-package cn.rtmap.bigdata.ingest.source;
+package cn.rtmap.bigdata.ingest.constant;
 
-public final class DBConfigConstants {
+public final class DBConstants {
 
 	public static final String CONFIG_PROPS               = "properties";
 	public static final String CONFIG_JDBC_DRIVER         = "jdbc.driver";
@@ -19,7 +19,7 @@ public final class DBConfigConstants {
 	
 	public static final String  CONFIG_DEBUG              = "debugger";
 	
-	private DBConfigConstants() {
+	private DBConstants() {
 		// Disable explicit creation of objects.
 	}
 
