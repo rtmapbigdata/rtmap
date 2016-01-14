@@ -48,7 +48,7 @@ public class DBSource extends AbstractSource implements EventDrivenSource, Confi
 					CronScheduler dbScheduler = new CronScheduler();
 					JobDataMap jdm = new JobDataMap();
 					jdm.put(CommonConstants.PROP_FLUME_CONTEXT, ctx);
-					jdm.put(CommonConstants.PROP_CRON_EXPRESS,properties.getProperty(DBConstants.CONFIG_CRON_EXPRESS));
+					jdm.put(CommonConstants.PROP_CRON_EXPRESS,properties.getProperty(CommonConstants.CONFIG_CRON_EXPRESS));
 					//jdm.put(DBConstants.CONFIG_PROPS, properties);
 					dbScheduler.start(DBExtractorJob.class, jdm);
 					dbSchedulers.add(dbScheduler);

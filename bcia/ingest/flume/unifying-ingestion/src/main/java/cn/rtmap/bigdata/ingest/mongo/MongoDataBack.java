@@ -7,8 +7,7 @@ import java.util.List;
 import org.apache.commons.io.FileUtils;
 import org.bson.Document;
 
-import cn.rtmap.bigdata.ingest.constant.DBConstants;
-import cn.rtmap.bigdata.ingest.source.FileSourceConfigurationConstants;
+import cn.rtmap.bigdata.ingest.constant.CommonConstants;
 import cn.rtmap.bigdata.ingest.utils.DateUtils;
 import cn.rtmap.bigdata.ingest.utils.SQLUtil;
 
@@ -64,8 +63,8 @@ public class MongoDataBack {
 		String end=DateUtils.getDateByCondition(1, date)+" 00:00:00";
 		String fileName = "a_" + date.replaceAll("-", "") +  "_" + table.replaceAll("_", "-");
 		String filePath = PATH + fileName;
-		String datFile = filePath + DBConstants.CONFIG_FILE_EXTENSION;
-		String verfFile = filePath + FileSourceConfigurationConstants.DEFAULT_VERF_EXTENSION;
+		String datFile = filePath + CommonConstants.DEFAULT_FILE_EXTENSION;
+		String verfFile = filePath + CommonConstants.DEFAULT_VERF_EXTENSION;
 		System.out.println(">>>>> start table: "+table);
 		File file=new File(datFile);
 		if(file.exists()){
@@ -110,7 +109,7 @@ public class MongoDataBack {
     	}
 		if(count > 0){
 			SQLUtil.createVerfFile(file, file.getName(), verfFile);
-			SQLUtil.zipFile(file,filePath+DBConstants.CONFIG_ZIP_EXTENSION);
+			SQLUtil.zipFile(file,filePath+CommonConstants.DEFAULT_ZIP_EXTENSION);
 			FileUtils.forceDelete(file);
 		}
 		System.out.println("lines total: "+count);

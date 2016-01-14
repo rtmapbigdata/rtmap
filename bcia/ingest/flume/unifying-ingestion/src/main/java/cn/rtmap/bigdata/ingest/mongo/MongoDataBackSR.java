@@ -9,8 +9,7 @@ import java.util.Map;
 import org.apache.commons.io.FileUtils;
 import org.bson.Document;
 
-import cn.rtmap.bigdata.ingest.constant.DBConstants;
-import cn.rtmap.bigdata.ingest.source.FileSourceConfigurationConstants;
+import cn.rtmap.bigdata.ingest.constant.CommonConstants;
 import cn.rtmap.bigdata.ingest.utils.DateUtils;
 import cn.rtmap.bigdata.ingest.utils.SQLUtil;
 
@@ -77,7 +76,7 @@ public class MongoDataBackSR {
 	    	if(datas.get(create_date).size() >= threshold){
 	    		String fileName = "a_" + create_date.replaceAll("-", "") +  "_" + table.replaceAll("_", "-");
 	    		String filePath = PATH + "/" + create_date.replaceAll("-", "") + "/day/" + fileName;
-	    		String datFile = filePath + DBConstants.CONFIG_FILE_EXTENSION;
+	    		String datFile = filePath + CommonConstants.DEFAULT_FILE_EXTENSION;
 	    		File file=new File(datFile);
 	    		FileUtils.writeLines(file, datas.get(create_date), true);
 	    		datas.get(create_date).clear();
@@ -88,7 +87,7 @@ public class MongoDataBackSR {
 			if(datas.get(key).size() > 0){
 				String fileName = "a_" + key.replaceAll("-", "") +  "_" + table.replaceAll("_", "-");
 	    		String filePath = PATH + "/" + key.replaceAll("-", "") + "/day/" + fileName;
-	    		String datFile = filePath + DBConstants.CONFIG_FILE_EXTENSION;
+	    		String datFile = filePath + CommonConstants.DEFAULT_FILE_EXTENSION;
 	    		File file=new File(datFile);
 	    		FileUtils.writeLines(file, datas.get(key), true);
 	    	}
@@ -105,9 +104,9 @@ public class MongoDataBackSR {
 				File[] files=day.listFiles();
 				for(File file:files){
 					String verfFile = file.getAbsolutePath().replaceAll(
-							DBConstants.CONFIG_FILE_EXTENSION, FileSourceConfigurationConstants.DEFAULT_VERF_EXTENSION);
+							CommonConstants.DEFAULT_FILE_EXTENSION, CommonConstants.DEFAULT_VERF_EXTENSION);
 					String zipFile = file.getAbsolutePath().replaceAll(
-							DBConstants.CONFIG_FILE_EXTENSION, DBConstants.CONFIG_ZIP_EXTENSION);
+							CommonConstants.DEFAULT_FILE_EXTENSION, CommonConstants.DEFAULT_ZIP_EXTENSION);
 					System.out.println(zipFile);
 					try {
 						SQLUtil.createVerfFile(file, file.getName(), verfFile);

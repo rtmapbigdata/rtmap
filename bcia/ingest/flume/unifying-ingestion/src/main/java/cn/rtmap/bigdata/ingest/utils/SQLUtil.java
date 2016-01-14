@@ -24,6 +24,7 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import cn.rtmap.bigdata.ingest.constant.CommonConstants;
 import cn.rtmap.bigdata.ingest.constant.DBConstants;
 import au.com.bytecode.opencsv.CSVWriter;
 
@@ -61,7 +62,7 @@ public class SQLUtil {
         	destfile.delete();
         }
         new File(zipfile).createNewFile();
-        String fileName = srcfile.getName().replaceAll(DBConstants.CONFIG_TMP_EXTENSION, DBConstants.CONFIG_FILE_EXTENSION);
+        String fileName = srcfile.getName().replaceAll(CommonConstants.DEFAULT_TMP_EXTENSION, CommonConstants.DEFAULT_FILE_EXTENSION);
         FileOutputStream out = null;
         ZipOutputStream zipOut = null;
         FileInputStream in = null;
@@ -149,11 +150,11 @@ public class SQLUtil {
 			row = new String[num];
 			for (int i = 1; i <= num; ++i) {
 				if (rs.getObject(i) != null){
-					//filter \t \r\n
+					//replace \t \r \n with special sign
 					row[i-1] = rs.getObject(i).toString()
-							.replaceAll("\t", " ")
-							.replaceAll("\r", "")
-							.replaceAll("\n", "");
+							.replaceAll(DBConstants.SIGN_TAB, DBConstants.REPLACE_TAB)
+							.replaceAll(DBConstants.SIGN_RET_R, DBConstants.REPLACE_RET_R)
+							.replaceAll(DBConstants.SIGN_RET_N, DBConstants.REPLACE_RET_N);
 				}else{
 					row[i-1] = "";
 				}

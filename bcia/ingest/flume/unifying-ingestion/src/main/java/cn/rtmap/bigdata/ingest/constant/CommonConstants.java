@@ -5,6 +5,7 @@ public class CommonConstants {
 	public static final String  CONFIG_BACKUP_DIR   = "backup.dir";
 	public static final String  CONFIG_ALTER_EMAIL  = "alter.email";
 	public static final String  CONFIG_SCHED_THREAD = "sched.threads";
+	public static final String  CONFIG_CRON_EXPRESS = "cron.express";
 	public static final String  CONFIG_DEBUG        = "debugger";
 	
 	public static final String  DEFAULT_TMP_EXTENSION = ".tmp";

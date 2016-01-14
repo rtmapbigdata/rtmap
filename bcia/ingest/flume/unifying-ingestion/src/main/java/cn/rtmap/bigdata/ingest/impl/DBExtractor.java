@@ -5,6 +5,8 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -39,72 +41,79 @@ public class DBExtractor extends AbstractExtractor{
 		String password=ctx.getString(DBConstants.CONFIG_CONNECTION_PASSWORD).trim();
 		try {
 			connection = SQLUtil.getConnection(driver,url,username,password);
-		} catch (Exception e) {
-			logger.error("create connection error: "+e.getLocalizedMessage(),e);
-		}
-		ImmutableSet<String> keys=ctx.getParameters().keySet();
-		for(String key: keys){
-			if(key.startsWith(DBConstants.CONFIG_QUERY_KEYPRE)){
-				querys.put(key.substring(DBConstants.CONFIG_QUERY_KEYPRE.length()),ctx.getString(key));
+			statement = connection.createStatement();
+			ImmutableSet<String> keys=ctx.getParameters().keySet();
+			for(String key : keys){
+				if(key.startsWith(DBConstants.CONFIG_QUERY_KEYPRE)){
+					querys.put(key.substring(DBConstants.CONFIG_QUERY_KEYPRE.length()),ctx.getString(key));
+				}
 			}
+			incomingDir = ctx.getString(CommonConstants.CONFIG_INCOMING_DIR);
+			logger.info("init finish with " + querys.size() + " tables: " + url);
+		} catch (Exception e) {
+			logger.error("create connection or statement error: "+e.getLocalizedMessage(),e);
 		}
-		incomingDir = ctx.getString(CommonConstants.CONFIG_INCOMING_DIR);
-		logger.info("init finish with " + querys.size() + " tables: " + url);
 	}
 	
 	@Override
 	public Iterator<JsonElement<String, String>> getData() {
-		if(connection == null){
-			logger.error("connection fail,extract cancel!");
-			return null;
-		}
-		try {
-			statement = connection.createStatement();
+		if(statement != null){
 			extract();
-		} catch (SQLException e) {
-			logger.error("create statement error",e);
+		}else{
+			logger.error("statement create fail, extract cancel!");
 		}
 		return null;
 	}
 	
-	public void extract(){
+	private void extract(){
 		String today = DateUtils.getCurrentDate();
 		String yesterday = DateUtils.getDateByCondition(-1);
-		for(String table:querys.keySet()){
-			String sql = querys.get(table).replaceAll(DBConstants.CONFIG_QUERY_STARTDATE, yesterday+" 00:00:00")
-					           .replaceAll(DBConstants.CONFIG_QUERY_ENDDATE, today+" 00:00:00");
+		String datetime1 = yesterday + " 00:00:00";
+		String datetime2 = today + " 00:00:00";
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		long timestamp1=0;
+		long timestamp2=0;
+		try {
+			timestamp1 = sdf.parse(datetime1).getTime();
+			timestamp2 = sdf.parse(datetime2).getTime();
+		} catch (ParseException e) {
+			logger.error("init datetime value error",e);
+		}
+		for(String table : querys.keySet()){
+			String cfgSql = querys.get(table);
+			String sql = cfgSql.replaceAll(DBConstants.CONFIG_QUERY_STARTDATE, datetime1)
+					        .replaceAll(DBConstants.CONFIG_QUERY_ENDDATE, datetime2)
+					        .replaceAll(DBConstants.CONFIG_SQL_STARTTIME_LONG, timestamp1+"")
+					        .replaceAll(DBConstants.CONFIG_SQL_ENDTIME_LONG, timestamp2+"");
 			if(debugger){
 				sql += " limit 10";
 			}
-			//file name
 			String fileName = yesterday.replaceAll("-", "") +  "_" + table.replaceAll("_", "-");
-			if(querys.get(table).contains(DBConstants.CONFIG_QUERY_STARTDATE)){
+			if(cfgSql.contains(DBConstants.CONFIG_QUERY_STARTDATE) || cfgSql.contains(DBConstants.CONFIG_SQL_STARTTIME_LONG)){
 				fileName = "a_" + fileName;
 			}else{
 				fileName = "i_" + fileName;
 			}
 			String filePath = incomingDir + "/" + yesterday.replaceAll("-", "") + "/day/" + fileName;
-			String tmpFile  = filePath + DBConstants.CONFIG_TMP_EXTENSION;
+			String tmpFile  = filePath + CommonConstants.DEFAULT_TMP_EXTENSION;
 			ResultSet rs = null;
 			try {
-				logger.info("start sql: " + sql);
+				logger.info("start execute query: " + sql);
 				rs = statement.executeQuery(sql);
 				boolean succ = SQLUtil.saveResultSetAsCSV(rs, tmpFile);
 				if(succ){
-					SQLUtil.createVerfFile(new File(tmpFile), fileName+DBConstants.CONFIG_FILE_EXTENSION, 
+					SQLUtil.createVerfFile(new File(tmpFile), fileName+CommonConstants.DEFAULT_FILE_EXTENSION, 
 							filePath+FileSourceConfigurationConstants.DEFAULT_VERF_EXTENSION);
-					SQLUtil.zipFile(tmpFile,filePath+DBConstants.CONFIG_ZIP_EXTENSION,true);
+					SQLUtil.zipFile(tmpFile,filePath+CommonConstants.DEFAULT_ZIP_EXTENSION,true);
 				}
-				logger.info("finish sql: "+ filePath);
+				logger.info("finish query: " + filePath);
 			} catch (Exception e) {
-				logger.error("Table Extract Fail >>> " + table,e);
+				logger.error("table extract fail, " + table,e);
 			}finally{
-				if(rs != null){
-					try {
-						rs.close();
-					} catch (SQLException e) {
-						logger.error("ResultSet close error," + table,e);
-					}
+				try {
+					if(rs != null){rs.close();}
+				} catch (SQLException e) {
+					logger.error("resultset close error, " + table,e);
 				}
 			}
 		}
@@ -114,5 +123,4 @@ public class DBExtractor extends AbstractExtractor{
 	public void cleanup() {
 		SQLUtil.close(connection, statement);
 	}
-
 }
