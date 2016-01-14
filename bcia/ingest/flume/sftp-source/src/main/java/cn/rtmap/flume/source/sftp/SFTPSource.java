@@ -40,6 +40,9 @@ public class SFTPSource extends AbstractSource implements Configurable, Pollable
 	public Status process() throws EventDeliveryException {
 		try {
 			if (job.isTriggered()) {
+				ftp = new SFTPOperator();
+				ftp.login();
+
 				List<HashMap> itemList = ftp.getItemList();
 				List<DataFile> dfs = ftp.getDataFileList(itemList);
 
@@ -47,12 +50,10 @@ public class SFTPSource extends AbstractSource implements Configurable, Pollable
 				for (DataFile df : dfs) {
 					if (!dirList.contains(df.getFilePath())) {
 						dirList.add(df.getFilePath());
-						//ftp.backup(df.getFilePath());
 					}
-					
+
 					try {
-						csvWriter = new CSVWriter(new ChannelWriter(df), '\t',
-								CSVWriter.NO_QUOTE_CHARACTER);
+						csvWriter = new CSVWriter(new ChannelWriter(df), '\t',CSVWriter.NO_QUOTE_CHARACTER);
 						csvWriter.writeAll(df.getAllRows());
 						csvWriter.flush();
 					} finally {
@@ -71,32 +72,27 @@ public class SFTPSource extends AbstractSource implements Configurable, Pollable
     	} catch (IOException | JSchException | InterruptedException | SftpException e) {
     		LOG.error("Error getting data from sftp", e);
     		return Status.BACKOFF;
+    	} finally {
+    		if (ftp != null)
+    			ftp.logout();
     	}
 	}
 
 	@Override
 	public void configure(Context context) {
-		try {
-			ftp = new SFTPOperator();
-			sourceHelper = new SFTPSourceHelper(context);
-			sch = new SimpleScheduler();
-			job = new MyJob();
-		} catch (JSchException e) {
-			LOG.equals(e);
-		}
+		//ftp = new SFTPOperator();
+		sourceHelper = new SFTPSourceHelper(context);
+		sch = new SimpleScheduler();
+		job = new MyJob();
 	}
-	
+
 	@Override
     public void start() {
         LOG.info("Starting sftp source {} ...", getName());
 
         super.start();
-        try {
-			ftp.login();
-			sch.scheduleJob(sourceHelper.getCornScheduleExpress(), sourceHelper.getCornScheduleJobKey(), sourceHelper.getCornScheduleTriggerKey());
-		} catch (IOException e) {
-			LOG.error("start sftp...", e);
-		}
+        //ftp.login();
+		sch.scheduleJob(sourceHelper.getCornScheduleExpress(), sourceHelper.getCornScheduleJobKey(), sourceHelper.getCornScheduleTriggerKey());
     }
 
     @Override

@@ -124,40 +124,55 @@ public class SFTPOperator {
 
 	public List<HashMap> getItemList() throws IOException {
     	client.setCharset("UTF-8");
-    	
     	List<HashMap> items = new ArrayList<HashMap>();
-    	List<SFTPv3DirectoryEntry> dirList = client.ls(Constants.SFTP_ROOT_DIR);
-    	for (SFTPv3DirectoryEntry entry : dirList) {
-    		if (".".equals(entry.filename) || "..".equals(entry.filename)) {
+    	
+    	List<SFTPv3DirectoryEntry> dateDirs = client.ls(Constants.SFTP_ROOT_DIR);
+    	for (SFTPv3DirectoryEntry date : dateDirs) {
+    		if (".".equals(date.filename) || "..".equals(date.filename)) {
+    			continue;
+    		}
+    		if (!date.attributes.isDirectory()) {
     			continue;
     		}
 
-    		String filePath = Constants.SFTP_ROOT_DIR + "/" + entry.filename;
-    		SFTPv3FileAttributes attr = client.stat(filePath);
-    		if (attr.isDirectory()) {
-    			List<SFTPv3DirectoryEntry> fileList = client.ls(filePath);
-    			HashMap fileInfo = new HashMap();
+        	List<SFTPv3DirectoryEntry> dirList = client.ls(Constants.SFTP_ROOT_DIR + "/" + date.filename);
+        	for (SFTPv3DirectoryEntry entry : dirList) {
+        		if (".".equals(entry.filename) || "..".equals(entry.filename)) {
+        			continue;
+        		}
+        		if (!entry.attributes.isDirectory()) {
+        			continue;
+        		}
+        		
+        		String filePath = Constants.SFTP_ROOT_DIR + "/" + date.filename + "/" + entry.filename;
+        		SFTPv3FileAttributes attr = client.stat(filePath);
+        		if (attr.isDirectory()) {
+        			List<SFTPv3DirectoryEntry> fileList = client.ls(filePath);
+        			HashMap fileInfo = new HashMap();
 
-    			boolean flagExist = false;
-    			for (SFTPv3DirectoryEntry file : fileList) {
-    				if (".".equals(file.filename) || "..".equals(file.filename)) {
-    					continue;
-    				}
+        			boolean flagExist = false;
+        			for (SFTPv3DirectoryEntry file : fileList) {
+        				if (".".equals(file.filename) || "..".equals(file.filename)) {
+        					continue;
+        				}
 
-    				if (Constants.SFTP_FLAG_FILE.equals(file.filename)) {
-    					flagExist = true;
-    				} else {
-    					HashMap map = new HashMap();
-    					fileInfo.put(filePath + "/" + file.filename, file.attributes.size);
-    				}
-    			}
+        				if (Constants.SFTP_FLAG_FILE.equals(file.filename)) {
+        					flagExist = true;
+        				} else {
+        					HashMap map = new HashMap();
+        					String dataFile = filePath + "/" + file.filename;
+        					LOG.info("scan file:" + dataFile);
+        					fileInfo.put(dataFile, file.attributes.size);
+        				}
+        			}
 
-    			if (flagExist) {
-    				items.add(fileInfo);
-    			}
-    		}
+        			if (flagExist) {
+        				items.add(fileInfo);
+        			}
+        		}
+        	}
     	}
-    	
+
     	return items;
 	}
 
