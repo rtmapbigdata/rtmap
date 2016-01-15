@@ -122,5 +122,6 @@ public class DBExtractor extends AbstractExtractor{
 	@Override
 	public void cleanup() {
 		SQLUtil.close(connection, statement);
+		logger.info("---------- finish job ----------");
 	}
 }

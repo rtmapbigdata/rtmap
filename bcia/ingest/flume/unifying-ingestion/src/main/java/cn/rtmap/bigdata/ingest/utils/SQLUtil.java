@@ -139,7 +139,7 @@ public class SQLUtil {
     }
 	public static boolean saveResultSetAsCSV(ResultSet rs, String fileName) throws Exception {
 		if(rs == null || fileName == null){
-			logger.error("Save ResultSet As CSV Error: ResultSet or fileName is null");
+			logger.error("save resultset as csv error: resultset or fileName is null");
 			return false;
 		}
 		List<String[]> allRows = new ArrayList<String[]>();
@@ -161,6 +161,7 @@ public class SQLUtil {
 			}
 			allRows.add(row);
 		}
+		logger.info("resultset line count is "+allRows.size());
 		if(allRows.size() == 0){
 			return false;
 		}
