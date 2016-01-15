@@ -5,6 +5,9 @@ public final class DBConstants {
 	public static final String CONFIG_CONNECTION_URL      = "db.url";
 	public static final String CONFIG_CONNECTION_USERNAME = "db.username";
 	public static final String CONFIG_CONNECTION_PASSWORD = "db.password";
+	public static final String  CONFIG_HOST               = "host";
+	public static final String  CONFIG_PORT               = "port";
+	public static final String  CONFIG_DB                 = "database";
 	
 	public static final String CONFIG_DB_CONFS            = "db.conf";
 	public static final String CONFIG_QUERY_KEYPRE        = "table.";
