@@ -106,6 +106,7 @@ public class MongoExtractor implements Extractor {
 		}
 		MongoCollection<Document> collection = db.getCollection(tbName);
 		FindIterable<Document> iterable = collection.find(Filters.and(Filters.gte(whereField,datetime1),Filters.lt(whereField,datetime2)));
+		//FindIterable<Document> iterable = collection.find(Filters.lt(whereField,datetime2));//history
 		MongoCursor<Document> docs=iterable.iterator();
 		List<String> lines=new ArrayList<String>();
 		int count = 0;

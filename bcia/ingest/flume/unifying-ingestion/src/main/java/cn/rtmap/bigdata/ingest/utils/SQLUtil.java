@@ -150,11 +150,15 @@ public class SQLUtil {
 			row = new String[num];
 			for (int i = 1; i <= num; ++i) {
 				if (rs.getObject(i) != null){
-					//replace \t \r \n with special sign
-					row[i-1] = rs.getObject(i).toString()
-							.replaceAll(DBConstants.SIGN_TAB, DBConstants.REPLACE_TAB)
-							.replaceAll(DBConstants.SIGN_RET_R, DBConstants.REPLACE_RET_R)
-							.replaceAll(DBConstants.SIGN_RET_N, DBConstants.REPLACE_RET_N);
+					if("TINYINT".equalsIgnoreCase(meta.getColumnTypeName(i))){
+						row[i-1] = rs.getInt(i)+"";
+					}else{
+						//replace \t \r \n with special sign
+						row[i-1] = rs.getObject(i).toString()
+								.replaceAll(DBConstants.SIGN_TAB, DBConstants.REPLACE_TAB)
+								.replaceAll(DBConstants.SIGN_RET_R, DBConstants.REPLACE_RET_R)
+								.replaceAll(DBConstants.SIGN_RET_N, DBConstants.REPLACE_RET_N);
+					}
 				}else{
 					row[i-1] = "";
 				}
