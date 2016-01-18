@@ -34,12 +34,12 @@ import cn.rtmap.bigdata.ingest.utils.IngestUtil;
  * Extractor data
  */
 public class RuianGetExtractor implements Extractor {
-	static final Logger logger = LoggerFactory.getLogger(RuianGetExtractor.class);
-	static String incoming = null;
-	int beforeDays = 6;
-	static StringBuffer detailLog = new StringBuffer();
-	static boolean stat = false;
-	String tmpFile = null;
+	private static final Logger logger = LoggerFactory.getLogger(RuianGetExtractor.class);
+	private String incoming = null;
+	private int beforeDays = 6;
+	private StringBuffer detailLog = new StringBuffer();
+	private boolean stat = false;
+	private String tmpFile = null;
 			
 	@Override
 	public void init(Context ctx) {
@@ -223,16 +223,25 @@ public class RuianGetExtractor implements Extractor {
 		}
 	}
 
+	public void setIncoming(String incoming) {
+		this.incoming = incoming;
+	}
+
+	public StringBuffer getDetailLog() {
+		return detailLog;
+	}
+
 	public static void main(String[] args){
 		String reqDate=args.length>0?args[0]:null;
-		incoming=args.length>1?args[1]:"/mnt/data/share/ingest/incoming/ruian";
-		System.out.println("parameter: date="+reqDate+", incoming="+incoming);
+		String reqIncoming=args.length>1?args[1]:"/mnt/data/share/ingest/incoming/ruian";
+		System.out.println("parameter: date="+reqDate+", incoming="+reqIncoming);
 		
 		RuianGetExtractor extractor=new RuianGetExtractor();
-		stat=extractor.extract(reqDate);
+		extractor.setIncoming(reqIncoming);
+		boolean resstat=extractor.extract(reqDate);
 		extractor.cleanup();
-		System.out.println("ruian extract "+(stat?"success":"fail"));
-		System.out.println(detailLog.toString());
+		System.out.println("ruian extract "+(resstat?"success":"fail"));
+		System.out.println(extractor.getDetailLog().toString());
 	}
 
 }
