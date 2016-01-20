@@ -46,9 +46,9 @@ public class RuianInnerJob extends BaseJob implements Job {
 		}
 		extractor.cleanup();
 		if (StringUtils.isNotBlank(toAddr)) {
-			String title = "ruian exchange to kafka "+(events==0?"fail":"success");
-			String content = "ruian exchange<br>hive query result to kafka finish,event count is "+events;
-			MailSender.sendHtmlMail(toAddr.trim(), title, content);
+			String subject = (events==0?"fail":"success")+":ruian exchange put to kafka";
+			String content = "ruian exchange:<br>put hive query result to kafka finish,event count is "+events;
+			MailSender.sendHtmlMail(toAddr.trim(), subject, content);
 			logger.info("send email to admin: "+ toAddr);
 		}else{
 			logger.info("send email to admin cancel,email address is not set!");

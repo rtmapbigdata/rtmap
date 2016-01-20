@@ -61,11 +61,10 @@ public class RuianHiveExtractor implements Extractor {
 		           + "select mac,substr(loc_time,0,15) as dt,loc_time from ods_lbs_net_position_yyyymmdd "
 		           + "where month_id="+month_id+" and day_id="+day_id+" and build_id=860100010030100003"
 				   + ") t1 group by mac,dt";
-		//String sql="select mac,loc_time from ods_lbs_net_position_yyyymmdd where month_id=201601 and day_id=20160118 limit 2000";
-		logger.info("starting: "+sql);
+		//String sql="select mac,loc_time from ods_lbs_net_position_yyyymmdd where month_id=201601 and day_id=20160118 limit 200";
+		logger.info("starting get data: "+sql);
 		List<JsonElement<String, String>> res = new LinkedList<JsonElement<String, String>>();
 		Map<String, List<String>> datas=new HashMap<>();//<mac,times>
-		int macsCount = 0;
 		try {
 			ResultSet rs=statement.executeQuery(sql);
 			String mac = null;
@@ -75,14 +74,11 @@ public class RuianHiveExtractor implements Extractor {
 				loc_time=rs.getString("loc_time");
 				if(!datas.containsKey(mac)){
 					datas.put(mac, new ArrayList<String>());
-					macsCount++;
 				}
 				datas.get(mac).add(loc_time);
 			}
-			logger.info("mac count is " + macsCount);
-			Map<String, String> headers=new HashMap<>();//TODO
-			headers.put("type", "ruian");
-			headers.put(HeaderConstants.DEF_ROW_NUM, String.valueOf(macsCount));
+			logger.info("mac count is " + datas.size());
+			Map<String, String> headers=new HashMap<>();
 			List<String> jsons=toHttpBody(datas);
 			logger.info("event count is " + jsons.size());
 			datas.clear();
@@ -94,7 +90,7 @@ public class RuianHiveExtractor implements Extractor {
 			}
 			jsons.clear();
 		} catch (Exception e) {
-			logger.error(e.getLocalizedMessage(),e);
+			logger.error("extractor get data error,"+e.getLocalizedMessage(),e);
 		}
 		return res.iterator();
 	}
