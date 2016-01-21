@@ -6,4 +6,6 @@ public class RuianConstants {
 	
 	public static final String CONFIG_BEFORE_DAYS  = "before.days";
 	
+	public static final String  FROM_RUIAN = "ruian";
+	
 }

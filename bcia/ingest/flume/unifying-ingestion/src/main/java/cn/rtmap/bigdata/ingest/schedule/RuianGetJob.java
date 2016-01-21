@@ -8,6 +8,8 @@ import org.quartz.Job;
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import cn.rtmap.bigdata.ingest.base.Extractor;
 import cn.rtmap.bigdata.ingest.base.JsonElement;
@@ -19,7 +21,7 @@ import cn.rtmap.bigdata.ingest.utils.MailSender;
  * DB Extractor Job
  */
 public class RuianGetJob implements Job {
-	
+	private static final Logger logger = LoggerFactory.getLogger(RuianGetJob.class);
 	@Override
 	public void execute(JobExecutionContext context) throws JobExecutionException {
 		JobDataMap map = context.getJobDetail().getJobDataMap();
@@ -28,7 +30,8 @@ public class RuianGetJob implements Job {
 		Extractor extractor = new RuianGetExtractor();
 		extractor.init(ctx);
 		Iterator<JsonElement<String, String>> it = extractor.getData();
-		if (it.hasNext() && StringUtils.isNotBlank(toAddr)) {
+		if (StringUtils.isNotBlank(toAddr)) {
+			logger.info("send email to admin: "+ toAddr);
 			JsonElement<String, String> je=it.next();
 			String title = (String) je.getHeader(CommonConstants.PROP_MAIL_SUBJECT);
 			String content = (String) je.getHeader(CommonConstants.PROP_MAIL_CONTENT);

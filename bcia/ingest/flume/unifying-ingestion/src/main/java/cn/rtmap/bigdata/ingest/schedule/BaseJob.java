@@ -9,7 +9,6 @@ public class BaseJob {
 	public Event buildEvent(JsonElement<String, String> o) {
 		byte[] body = o.getBody();
 		Map<String, String> headers = o.getHeaders();
-
 		// format the message
 		return EventBuilder.withBody(body, headers);
 	}

@@ -18,10 +18,8 @@ import cn.rtmap.bigdata.ingest.schedule.RuianGetJob;
  */
 public class RuianSource extends AbstractSource implements EventDrivenSource, Configurable {
 	static final Logger logger = LoggerFactory.getLogger(RuianSource.class);
-	
 	Context ctx;
 	CronScheduler getScheduler = new CronScheduler();
-	CronScheduler sendScheduler = new CronScheduler();
 	
 	@Override
 	public void start() {
@@ -38,7 +36,6 @@ public class RuianSource extends AbstractSource implements EventDrivenSource, Co
 	@Override
 	public void stop() {
 		getScheduler.stop();
-		sendScheduler.stop();
 		super.stop();
 	}
 	
