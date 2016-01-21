@@ -25,7 +25,7 @@ public class EventDeserializer extends AbstractFlumeInterceptor {
 	@Override
 	public Event intercept(Event event) {
 		byte[] src = event.getBody();
-		logger.info("debug: " + new String(src));
+		//logger.info("debug: " + new String(src));
 		ObjectMapper mapper = new ObjectMapper();
 
 		try {
