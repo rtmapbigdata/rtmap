@@ -70,7 +70,7 @@ public class SFTPSource extends AbstractSource implements Configurable, Pollable
     		Thread.sleep(SLEEP_INTERVAL);
     		return Status.READY;
     	} catch (IOException | JSchException | InterruptedException | SftpException e) {
-    		LOG.error("Error getting data from sftp", e);
+    		LOG.error("sftp failed", e);
     		return Status.BACKOFF;
     	} finally {
     		if (ftp != null)
@@ -80,7 +80,6 @@ public class SFTPSource extends AbstractSource implements Configurable, Pollable
 
 	@Override
 	public void configure(Context context) {
-		//ftp = new SFTPOperator();
 		sourceHelper = new SFTPSourceHelper(context);
 		sch = new SimpleScheduler();
 		job = new MyJob();
@@ -89,16 +88,13 @@ public class SFTPSource extends AbstractSource implements Configurable, Pollable
 	@Override
     public void start() {
         LOG.info("Starting sftp source {} ...", getName());
-
         super.start();
-        //ftp.login();
 		sch.scheduleJob(sourceHelper.getCornScheduleExpress(), sourceHelper.getCornScheduleJobKey(), sourceHelper.getCornScheduleTriggerKey());
     }
 
     @Override
     public void stop() {
         LOG.info("Stopping sftp source {} ...", getName());
-        ftp.logout();
         super.stop();
     }
 

@@ -1,12 +1,7 @@
 package cn.rtmap.flume.source.sftp;
 
-//import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
-//import java.io.File;
-import java.io.FileOutputStream;
-//import java.io.FileWriter;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -17,7 +12,6 @@ import ch.ethz.ssh2.ConnectionMonitor;
 import ch.ethz.ssh2.SFTPv3Client;
 import ch.ethz.ssh2.SFTPv3DirectoryEntry;
 import ch.ethz.ssh2.SFTPv3FileAttributes;
-import ch.ethz.ssh2.SFTPv3FileHandle;
 
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.ChannelSftp;
@@ -26,31 +20,20 @@ import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 import com.jcraft.jsch.SftpException;
 
+import org.mortbay.log.Log;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class SFTPOperator {
 	private static final Logger LOG = LoggerFactory.getLogger(SFTPOperator.class);
-	
-	//private static String sshHostName = "r2s5";
-	//private static String ROOT_DIR = "/root/electrocar";
-	//private static String ROOT_DIR_BAK = "/root/electrocar-bak";
-	//private static String FLAG_FILE = "start.txt";
-	//private static String MD5_FLAG = "_MD5.txt";
-	//private static String EXT_NAME = ".txt";
-	//private static int BLOCK_SIZE = 20 * 1024;
-
-	//private static String user = "root";
-	//private static String passwd = "passw0rd";
 
 	private Connection conn = null;
 	private SFTPv3Client client = null;
-
+	private final String dateFolderPrefix = "20";
 	
 	ChannelSftp sftp;
 	Session sshSession;
 	Channel channel;
-
 
 	public SFTPOperator() throws JSchException {
 		conn = new Connection(Constants.SFTP_HOSTNAME, Constants.SFTP_PORT);
@@ -61,49 +44,30 @@ public class SFTPOperator {
 		sftp = null;
     	
     	sshSession = new JSch().getSession(Constants.SFTP_USER, Constants.SFTP_HOSTNAME, Constants.SFTP_PORT);
-    	//System.out.println("Session created.");
     	sshSession.setPassword(Constants.SFTP_PASSWD);
     	Properties sshConfig = new Properties();
     	sshConfig.put("StrictHostKeyChecking", "no");
     	sshSession.setConfig(sshConfig);
     	sshSession.connect();
 
-    	//System.out.println("Session connected.");
-    	//System.out.println("Opening Channel.");
     	Channel channel = sshSession.openChannel("sftp");
     	channel.connect();
-    	
+
     	sftp = (ChannelSftp) channel;
-    	//System.out.println("Connected to " + "dn02" + ".");
 	}
 	
 	
 	void closeJSch() {
-		sftp.exit();
-    	sshSession.disconnect();
+		if (sftp != null) {
+			sftp.exit();
+		}
+		if (sshSession != null) {
+			sshSession.disconnect();
+		}
 	}
 
-    /*public static void main( String[] args ) throws IOException, JSchException, SftpException {
-    	SFTPOperator ftp = new SFTPOperator();
-    	try {
-    		ftp.login();
-    		List<HashMap> itemList = ftp.getItemList();
-    		List<DataFile> dfs = ftp.getDataFileList(itemList);
 
-    		List<String> dirList = new ArrayList<String>();
-    		for (DataFile df : dfs) {
-    			if (!dirList.contains(df.getFilePath())) {
-    				dirList.add(df.getFilePath());
-    				ftp.moveForBakcup(df.getFilePath(), ROOT_DIR_BAK);
-    			}
-    			df.getAllRows();
-    		}
-    	} finally {
-    		ftp.logout();
-    	}    
-    }*/
-
-    public void login() throws IOException {
+    public void login() throws IOException, JSchException {
     	conn.addConnectionMonitor(new ConnectionMonitor() {
 			@Override
 			public void connectionLost(Throwable reason) {
@@ -118,11 +82,13 @@ public class SFTPOperator {
     		throw new IOException("Connect SSH Authentication failed.");
     	}
 
-    	LOG.info("Connecting to " + Constants.SFTP_HOSTNAME + " successfully.");    	
+    	LOG.debug("Connecting to " + Constants.SFTP_HOSTNAME + " successfully.");    	
     	client = new SFTPv3Client(conn);
+    	
+    	initJSch();
     }
 
-	public List<HashMap> getItemList() throws IOException {
+	public List<HashMap> getItemList() throws IOException, SftpException {
     	client.setCharset("UTF-8");
     	List<HashMap> items = new ArrayList<HashMap>();
     	
@@ -135,6 +101,10 @@ public class SFTPOperator {
     			continue;
     		}
 
+    		int validCount = 0;
+    		if (!date.filename.startsWith(dateFolderPrefix)) {
+    			continue;
+    		}
         	List<SFTPv3DirectoryEntry> dirList = client.ls(Constants.SFTP_ROOT_DIR + "/" + date.filename);
         	for (SFTPv3DirectoryEntry entry : dirList) {
         		if (".".equals(entry.filename) || "..".equals(entry.filename)) {
@@ -161,7 +131,7 @@ public class SFTPOperator {
         				} else {
         					HashMap map = new HashMap();
         					String dataFile = filePath + "/" + file.filename;
-        					LOG.info("scan file:" + dataFile);
+        					LOG.debug("scan file:" + dataFile);
         					fileInfo.put(dataFile, file.attributes.size);
         				}
         			}
@@ -170,6 +140,13 @@ public class SFTPOperator {
         				items.add(fileInfo);
         			}
         		}
+        		validCount++;
+        	}
+
+        	if (validCount <= 0) {
+        		String dateDir = Constants.SFTP_ROOT_DIR + "/" + date.filename;
+        		sftp.rm(dateDir + "/*");
+        		sftp.rmdir(dateDir);
         	}
     	}
 
@@ -182,10 +159,12 @@ public class SFTPOperator {
 
     	if (conn != null)
     		conn.close();
+    	
+    	closeJSch();
     }
 
-    
-    public List<DataFile> getDataFileList(List<HashMap> itemList) throws IOException, JSchException, SftpException {
+
+	public List<DataFile> getDataFileList(List<HashMap> itemList) throws IOException, JSchException, SftpException {
     	List<DataFile> dataFileList = new ArrayList<DataFile>();
 		String md5sum = "";
 
@@ -200,7 +179,7 @@ public class SFTPOperator {
     					byte[] block = blocks.get(0);
     					String content = new String(block);
     					md5sum = content.split(" ")[0];
-    					LOG.info("md5sum : " + md5sum);
+    					LOG.debug("md5sum : " + md5sum);
     				}
 
     				String dataFileFullName = md5File.substring(0, md5File.indexOf(Constants.SFTP_FLAG_MD5_FLAG)) + Constants.SFTP_EXT_NAME;
@@ -208,10 +187,8 @@ public class SFTPOperator {
 
     				String[] tok = dataFileFullName.split("/");
     				String dataFileName = tok[tok.length - 1];
-    				LOG.info(dataFileName);
 
     				String dataFilePath = dataFileFullName.substring(0, dataFileFullName.lastIndexOf(dataFileName));
-    				LOG.info(dataFilePath);
     				
     				DataFile di = new DataFile();
     				di.setFileName(dataFileName);
@@ -236,106 +213,45 @@ public class SFTPOperator {
     	moveForBakcup(filePath, Constants.SFTP_ROOT_DIR_BAK);
     }
 
-    private void moveForBakcup(String oldPath, String newPath) throws IOException {
+    private void moveForBakcup(String oldPath, String newPath) {
     	String dstPath;
+    	String dstDateDir;
     	String[] toks = oldPath.split("/");
     	if (newPath.endsWith("/")) {
-    		dstPath = String.format("%s%s", newPath, toks[toks.length - 1]);
+    		dstDateDir = String.format("%s%s", newPath, toks[toks.length - 2]);
     	} else {
-    		dstPath = String.format("%s/%s", newPath, toks[toks.length - 1]);
+    		dstDateDir = String.format("%s/%s", newPath, toks[toks.length - 2]);
     	}
 
-    	// move the whole source folder to backup folder
-    	client.mv(oldPath, dstPath);
-    	LOG.info("moved " + oldPath + " to " + dstPath);
-    }
-    
-    private List<byte[]> getRawContent(String filePath, long fileSize) throws IOException {    	
-    	int readSize;
-    	byte[] buffer;
-
-    	List<byte[]> blocks = new ArrayList<byte[]>();
-    	SFTPv3FileHandle fileHandle = null;
-
+    	dstPath = String.format("%s/%s", dstDateDir, toks[toks.length - 1]);
     	try {
-    		long numread = 0;
-    		long offset = 0;
-    		fileHandle = client.openFileRW(filePath);
-    		//fileHandle = client.openFile(filePath, 
-    		//client.openFile(fileName, flags, attr)
-
-    		/*if (fileSize <= BLOCK_SIZE) {
-    			readSize = (int)fileSize;
-    			buffer = new byte[readSize];
-    			numread = client.read(fileHandle, offset, buffer, 0, readSize);
-    			if (numread != -1) {
-    				blocks.add(buffer);
-    				LOG.info("file: " + filePath + ", read size in bytes: " + readSize);
-    			}
-    		} else {*/
-    			OutputStream fstream = null;
-    			String fileNamex = filePath.substring(filePath.lastIndexOf("/"), filePath.length()); 
-    			fstream = new FileOutputStream(String.format("D:\\abc\\%s", fileNamex));
-    			
-    			//readSize = BLOCK_SIZE;
-    			readSize = fileSize > Constants.SFTP_FILE_BLOCK_SIZE ? Constants.SFTP_FILE_BLOCK_SIZE : (int)fileSize;
-    			buffer = new byte[readSize];
-    			//offset = BLOCK_SIZE;
-    			while (readSize > 0 && (numread = client.read(fileHandle, offset, buffer, 0, readSize)) != -1) {
-    				offset += numread;
-    				//blocks.add(bytes);
-    				LOG.info("length:" + offset);
-    				LOG.info("file: " + filePath + ", batch read in bytes: " + numread + ", block size:" + Constants.SFTP_FILE_BLOCK_SIZE);
-    				fstream.write(buffer);
-
-    				readSize = fileSize > (offset + Constants.SFTP_FILE_BLOCK_SIZE) ? Constants.SFTP_FILE_BLOCK_SIZE :  (int)(fileSize - offset);
-    				buffer = new byte[readSize];
-    			}
-    			fstream.close();
-    		//}
-    	} finally {
-    		if (fileHandle != null) {
-    			client.closeFile(fileHandle);
-    			fileHandle = null;
-    		}
-    	}
-
-    	return blocks;
+			Log.info("creating remote dir:" + dstDateDir);
+			try {
+				sftp.mkdir(dstDateDir);
+			} catch (Exception ex) {
+				LOG.warn("seems dir " + dstDateDir + " already exists.");
+			}
+			sftp.chmod(0755, dstDateDir);
+			client.mv(oldPath, dstPath);
+			LOG.info("moved " + oldPath + " to " + dstPath);
+		} catch (SftpException | IOException e) {
+			LOG.error("move directory failed", e);
+		}
     }
 
     private List<byte[]> getRawContentV2(String filePath, long fileSize) throws IOException, JSchException, SftpException {    	
-    	initJSch();
-    	
     	String path = filePath.substring(0, filePath.lastIndexOf("/"));
-    	//System.out.println(path);
-    	LOG.info("file path: " + path);
+    	LOG.debug("file path: " + path);
     	sftp.cd(path);
-    	
-    	String fileName = filePath.substring(filePath.lastIndexOf("/") +1, filePath.length());
-    	
-    	//String dstPath = String.format("D:\\df4\\%s", fileNamex);
-    	//File file=new File(dstPath);
 
-    	//System.out.println("file:" + fileNamex);
+    	String fileName = filePath.substring(filePath.lastIndexOf("/") +1, filePath.length());
     	ByteArrayOutputStream out = new ByteArrayOutputStream();
-    	LOG.info("file name: " + fileName);
+    	LOG.debug("file name: " + fileName);
     	sftp.get(fileName, out);
 
     	byte[] bytes = out.toByteArray();
     	List<byte[]> blocks = new ArrayList<byte[]>();
     	blocks.add(bytes);
-
-    	closeJSch();
     	return blocks;
     }
-
-    /*private int readFile(String filePath, long offset, byte[] buf, int start, int len) throws IOException {
-    	SFTPv3Client clnt = new SFTPv3Client(conn);
-    	SFTPv3FileHandle handle = clnt.openFileRO(filePath);
-    	int numread = clnt.read(handle, offset, buf, start, len);
-    	clnt.closeFile(handle);
-    	clnt.close();
-
-    	return numread;
-    }*/
 }
