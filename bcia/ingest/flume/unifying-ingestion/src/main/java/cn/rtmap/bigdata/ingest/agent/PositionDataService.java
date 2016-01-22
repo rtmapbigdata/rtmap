@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 import cn.rtmap.bigdata.ingest.impl.HeaderConstants;
 import cn.rtmap.bigdata.ingest.utils.Compressor;
 import cn.rtmap.bigdata.ingest.utils.HexStringUtil;
+import cn.rtmap.bigdata.ingest.utils.URLUtil;
 import cn.rtmap.bigdata.ingest.utils.ZipUtil;
 
 public class PositionDataService {
@@ -41,8 +42,9 @@ public class PositionDataService {
 	private static final String SRC_FROM = "lbs";
 
     public void sendFiles(String root, String date, String buildid, String[] urls) throws IOException {
-    	String url;
-    	int idx;
+    	String url = null;
+    	int idx = 0;
+    	final int retries = 15; 
 
         File bids = new File(root);
         File[] bidDirs = bids.listFiles();
@@ -67,8 +69,13 @@ public class PositionDataService {
                     unZipIfExists(dateDir.getAbsolutePath());
                     for (File dataFile : dateDir.listFiles()) {
                     	if (dataFile.isFile() && dataFile.getName().endsWith(SUFFIX_CSV)) {
-                    		idx = rand.nextInt(urls.length);
-                    		url = urls[idx];
+                    		for (int i = 0; i < retries; ++i) {
+                    			idx = rand.nextInt(urls.length);
+                    			url = urls[idx];
+                    			if (URLUtil.validateEndpoint(url)) {
+                    				break;
+                    			}
+                    		}
                     		LOG.info("randomly picked url: " + url);
                     		LOG.info("processing file:" + dataFile.getName());
                     		postFile(bidDir.getName(), dateDir.getName(), dataFile.getAbsolutePath(), url);

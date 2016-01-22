@@ -20,6 +20,7 @@ public class URLUtil {
 	public static boolean validateEndpoint(final String endpoint, final String port) {
 		try {
 			URL url = new URL(endpoint + ":" + port);
+			LOG.debug(url.toString());
 			URLConnection conn = url.openConnection();
 			conn.connect();
 			return true;
@@ -32,6 +33,18 @@ public class URLUtil {
 			String errMsg = "Web Service endpoint is not valid: (" + endpoint
 					+ ":" + port + ")";
 			LOG.error(errMsg);
+			return false;
+		}
+	}
+	
+	public static boolean validateEndpoint(final String endpoint) {
+		int idx = endpoint.lastIndexOf(":");
+		if (idx > 0) {
+			String p1 = endpoint.substring(0, idx);
+			String p2 = endpoint.substring(idx+1, endpoint.length());
+			
+			return validateEndpoint(p1, p2);
+		} else {
 			return false;
 		}
 	}

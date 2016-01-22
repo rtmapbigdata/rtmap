@@ -1,0 +1,39 @@
+{ 
+  "servers" : "rtmap-name-01,rtmap-name-02",
+  "port" : "50070",
+  "prefix" : "/databank/ods/lbs",
+  "criteria" : 
+    [ { "table" : "bbea",
+        "fileCount" : 1
+      },
+      { "table" : "bcn",
+        "fileCount" : 1
+      },
+      { "table" : "bld",
+        "fileCount" : 1
+      },
+      { "table" : "brand",
+        "fileCount" : 1
+      },
+      { "table" : "bwff",
+        "fileCount" : 1
+      },
+      { "table" : "flr",
+        "fileCount" : 1
+      },
+      { "table" : "kws",
+        "fileCount" : 1
+      },
+      { "table" : "nav",
+        "fileCount" : 1
+      },
+      { "table" : "nps",
+        "fileCount" : 21
+      },
+      { "table" : "poi",
+        "fileCount" : 1
+      },
+      { "table" : "tps",
+        "fileCount" : 1
+      }]
+}
