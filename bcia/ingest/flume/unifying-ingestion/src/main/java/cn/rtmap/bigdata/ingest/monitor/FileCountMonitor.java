@@ -28,42 +28,51 @@ public class FileCountMonitor {
 	private final static int retries = 10;
 	private String criteriaFile;
 	private String errMsg;
+	private String emails;
 
 	private final static Random rand = new Random();
-	private FileCountCriteria criteria;
+	private FileCountCriteriaList criterias;
 
 	public FileCountMonitor(String criteriaFile) {
 		this.criteriaFile = criteriaFile;
 	}
 
-	private boolean checkFileCountOK() throws IOException {
+	private boolean checkFileCountOK() {
 		parseCriteriaJson(criteriaFile);
 		StringBuffer buf = new StringBuffer();
 
-		for (HashMap<String, Object> map : criteria.getCriteria()) {
-			String unitCode = (String) map.get(CRITERIA_TABLE);
-			long expectFileCount = (int) map.get(CRITERIA_FILE_COUNT);
+		emails = criterias.getEmails();
+		for (FileCountCriteria criteria : criterias.getCriteriaList()) {
+			for (HashMap<String, Object> map : criteria.getCriteria()) {
+				try {
+					String unitCode = (String) map.get(CRITERIA_TABLE);
+					long expectFileCount = (int) map.get(CRITERIA_FILE_COUNT);
 
-			String url = composeURL(criteria.getServers(), criteria.getPort(), criteria.getPrefix(), unitCode, OP);
-			String content = URLUtil.doGet(url);
-			ObjectMapper mapper = new ObjectMapper();
-			
-			JsonNode root = mapper.readTree(content);
-			JsonNode node = root.get("ContentSummary");
-			
-			ContentSummary summ = mapper.readValue(node.toString(), ContentSummary.class);
-			long actualFileCount = summ.getFileCount();
-			
-			String msg = String.format("%s/%s/%s/%s : expect file count : %s, actual file count: %s", criteria.getPrefix(), unitCode, composeYYYYMM(), composeYYYYMMDD(), expectFileCount, actualFileCount);
-			if (expectFileCount != actualFileCount) {
-				LOGGER.error(msg);
-				String tmp = String.format("ERROR: %s\n", msg);
-				buf.append(tmp);
-			} else {
-				LOGGER.info(msg);
+					String url = composeURL(criteria.getServers(), criteria.getPort(), criteria.getPrefix(), unitCode, OP);
+					String content = URLUtil.doGet(url);
+					ObjectMapper mapper = new ObjectMapper();
+					
+					JsonNode root = mapper.readTree(content);
+					JsonNode node = root.get("ContentSummary");
+					
+					ContentSummary summ = mapper.readValue(node.toString(), ContentSummary.class);
+					long actualFileCount = summ.getFileCount();
+					
+					String msg = String.format("%s/%s/%s/%s : expect file count : %s, actual file count: %s", criteria.getPrefix(), unitCode, composeYYYYMM(), composeYYYYMMDD(), expectFileCount, actualFileCount);
+					if (expectFileCount != actualFileCount) {
+						LOGGER.error(msg);
+						String tmp = String.format("ERROR: %s\n", msg);
+						buf.append(tmp);
+					} else {
+						LOGGER.info(msg);
+					}
+				} catch (IOException e) {
+					LOGGER.error("check file count failed", e);
+					String error = String.format("ERROR: %s\n", e.getCause());
+					buf.append(error);
+				}
 			}
 		}
-
 		errMsg = buf.toString();
 		return !(buf.length() > 0);
 	}
@@ -76,7 +85,8 @@ public class FileCountMonitor {
         String title = String.format("RTMAP big data monitoring report %s", sdf.format(date));
         String content = checkFileCountOK() ? template : errMsg;
 
-        MailSender.sendTextMail("wangjianbin@rtmap.com,liujialin@rtmap.com,zhangxiangwei@rtmap.com", title, content);
+        //System.out.println(content);
+        MailSender.sendTextMail(emails, title, content);
 	}
 
 	private String composeURL(String servers, int port, String prefix, String unitCode, String op) {
@@ -120,7 +130,7 @@ public class FileCountMonitor {
 	private void parseCriteriaJson(String jsonFile) {
 		ObjectMapper mapper = new ObjectMapper();
 		try {
-			criteria = mapper.readValue(new File(jsonFile), FileCountCriteria.class);
+			criterias = mapper.readValue(new File(jsonFile), FileCountCriteriaList.class);
 		} catch (IOException e) {
 			LOGGER.error("parse json failed", e);
 		}

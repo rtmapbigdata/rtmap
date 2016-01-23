@@ -1,39 +1,315 @@
-{ 
-  "servers" : "rtmap-name-01,rtmap-name-02",
-  "port" : "50070",
-  "prefix" : "/databank/ods/lbs",
-  "criteria" : 
-    [ { "table" : "bbea",
-        "fileCount" : 1
-      },
-      { "table" : "bcn",
-        "fileCount" : 1
-      },
-      { "table" : "bld",
-        "fileCount" : 1
-      },
-      { "table" : "brand",
-        "fileCount" : 1
-      },
-      { "table" : "bwff",
-        "fileCount" : 1
-      },
-      { "table" : "flr",
-        "fileCount" : 1
-      },
-      { "table" : "kws",
-        "fileCount" : 1
-      },
-      { "table" : "nav",
-        "fileCount" : 1
-      },
-      { "table" : "nps",
-        "fileCount" : 21
-      },
-      { "table" : "poi",
-        "fileCount" : 1
-      },
-      { "table" : "tps",
-        "fileCount" : 1
-      }]
-}
+{"emails" : "wangjianbin@rtmap.com,liujialin@rtmap.com,zhangxiangwei@rtmap.com", 
+ "criteriaList" : [{"servers" : "rtmap-name-01,rtmap-name-02",
+                    "port" : "50070",
+                    "prefix" : "/databank/ods/lbs",
+                    "criteria" : 
+                      [ { "table" : "bbea",
+                          "fileCount" : 1
+                        },
+                        { "table" : "bcn",
+                          "fileCount" : 1
+                        },
+                        { "table" : "bld",
+                          "fileCount" : 1
+                        },
+                        { "table" : "brand",
+                          "fileCount" : 1
+                        },
+                        { "table" : "bwff",
+                          "fileCount" : 1
+                        },
+                        { "table" : "flr",
+                          "fileCount" : 1
+                        },
+                        { "table" : "kws",
+                          "fileCount" : 1
+                        },
+                        { "table" : "nav",
+                          "fileCount" : 1
+                        },
+                        { "table" : "nps",
+                          "fileCount" : 23
+                        },
+                        { "table" : "poi",
+                          "fileCount" : 1
+                        },
+                        { "table" : "tps",
+                          "fileCount" : 1
+                        }]},
+                   {"servers" : "rtmap-name-01,rtmap-name-02",
+                    "port" : "50070",
+                    "prefix" : "/databank/ods/promo_v1",
+                    "criteria" : 
+                      [ { "table" : "beans",
+                          "fileCount" : 1
+                        },
+                        { "table" : "category",
+                          "fileCount" : 1
+                        },
+                        { "table" : "code-city",
+                          "fileCount" : 1
+                        },
+                        { "table" : "code-province",
+                          "fileCount" : 1
+                        },
+                        { "table" : "color-dict",
+                          "fileCount" : 1
+                        },
+                        { "table" : "favorite",
+                          "fileCount" : 1
+                        },
+                        { "table" : "favorite-member",
+                          "fileCount" : 1
+                        },
+                        { "table" : "industry-dict",
+                          "fileCount" : 1
+                        },
+                        { "table" : "interactive-dict",
+                          "fileCount" : 1
+                        },
+                        { "table" : "judge-prize",
+                          "fileCount" : 1
+                        },
+                        { "table" : "map-location",
+                          "fileCount" : 1
+                        },
+                        { "table" : "map-poi",
+                          "fileCount" : 1
+                        },
+                        { "table" : "maps-tile-level",
+                          "fileCount" : 1
+                        },
+                        { "table" : "market-info",
+                          "fileCount" : 1
+                        },
+                        { "table" : "market-shopInfor",
+                          "fileCount" : 1
+                        },
+                        { "table" : "member",
+                          "fileCount" : 1
+                        },
+                        { "table" : "member-game-total-score",
+                          "fileCount" : 1
+                        },
+                        { "table" : "member-prize-stamp",
+                          "fileCount" : 1
+                        },
+                        { "table" : "member-product",
+                          "fileCount" : 1
+                        },
+                        { "table" : "member-score",
+                          "fileCount" : 1
+                        },
+                        { "table" : "member-score-record",
+                          "fileCount" : 1
+                        },
+                        { "table" : "member-score-record-relation",
+                          "fileCount" : 1
+                        },
+                        { "table" : "message",
+                          "fileCount" : 1
+                        },
+                        { "table" : "message-member",
+                          "fileCount" : 1
+                        },
+                        { "table" : "poi-basic",
+                          "fileCount" : 1
+                        },
+                        { "table" : "poi-basic-2",
+                          "fileCount" : 1
+                        },
+                        { "table" : "product",
+                          "fileCount" : 1
+                        },
+                        { "table" : "product-picture",
+                          "fileCount" : 1
+                        },
+                        { "table" : "product-score",
+                          "fileCount" : 1
+                        },
+                        { "table" : "promo-interactive-relation",
+                          "fileCount" : 1
+                        },
+                        { "table" : "promo-pro-relation",
+                          "fileCount" : 1
+                        },
+                        { "table" : "promo-ticket-relation",
+                          "fileCount" : 1
+                        },
+                        { "table" : "promotions",
+                          "fileCount" : 1
+                        },
+                        { "table" : "promotions-shop-relation",
+                          "fileCount" : 1
+                        },
+                        { "table" : "shop-category-relation",
+                          "fileCount" : 1
+                        },
+                        { "table" : "shop-info",
+                          "fileCount" : 1
+                        },
+                        { "table" : "shop-picture",
+                          "fileCount" : 1
+                        },
+                        { "table" : "table-ad",
+                          "fileCount" : 1
+                        },
+                        { "table" : "table-exchange-product",
+                          "fileCount" : 1
+                        },
+                        { "table" : "table-exchange-product-market-relation",
+                          "fileCount" : 1
+                        },
+                        { "table" : "table-ibeacon-poi",
+                          "fileCount" : 1
+                        },
+                        { "table" : "table-kechuan-docno",
+                          "fileCount" : 1
+                        },
+                        { "table" : "table-kechuan-storecode",
+                          "fileCount" : 1
+                        },
+                        { "table" : "table-market-pay-active",
+                          "fileCount" : 1
+                        },
+                        { "table" : "table-member-integral-records",
+                          "fileCount" : 1
+                        },
+                        { "table" : "table-member-use-score",
+                          "fileCount" : 1
+                        },
+                        { "table" : "table-product-probability",
+                          "fileCount" : 1
+                        },
+                        { "table" : "table-shake-member",
+                          "fileCount" : 1
+                        },
+                        { "table" : "table-shake-product",
+                          "fileCount" : 1
+                        },
+                        { "table" : "table-shake-welfare-flage",
+                          "fileCount" : 1
+                        },
+                        { "table" : "table-shakepromo-round",
+                          "fileCount" : 1
+                        },
+                        { "table" : "table-wefare-flage-content",
+                          "fileCount" : 1
+                        },
+                        { "table" : "ticket",
+                          "fileCount" : 1
+                        },
+                        { "table" : "ticket-absent",
+                          "fileCount" : 1
+                        },
+                        { "table" : "ticket-info",
+                          "fileCount" : 1
+                        },
+                        { "table" : "users",
+                          "fileCount" : 1
+                        },
+                        { "table" : "users-wallet-account",
+                          "fileCount" : 1
+                        }]},
+                   {"servers" : "rtmap-name-01,rtmap-name-02",
+                    "port" : "50070",
+                    "prefix" : "/databank/ods/promo_v3",
+                    "criteria" : 
+                      [ { "table" : "shake-activity",
+                          "fileCount" : 1
+                        },
+                        { "table" : "shake-activity-actor",
+                          "fileCount" : 1
+                        },
+                        { "table" : "shake-activity-time",
+                          "fileCount" : 1
+                        },
+                        { "table" : "shake-beacon",
+                          "fileCount" : 1
+                        },
+                        { "table" : "shake-beacon-bind-record",
+                          "fileCount" : 1
+                        },
+                        { "table" : "shake-day-count",
+                          "fileCount" : 1
+                        },
+                        { "table" : "shake-effective-exposure-log",
+                          "fileCount" : 1
+                        },
+                        { "table" : "shake-operation-log",
+                          "fileCount" : 1
+                        },
+                        { "table" : "shake-prize",
+                          "fileCount" : 1
+                        },
+                        { "table" : "shake-prize-close-log",
+                          "fileCount" : 1
+                        },
+                        { "table" : "shake-prize-exposure-log",
+                          "fileCount" : 1
+                        },
+                        { "table" : "shake-prize-instance",
+                          "fileCount" : 1
+                        },
+                        { "table" : "shake-prize-rule",
+                          "fileCount" : 1
+                        },
+                        { "table" : "shake-prizebag-click-log",
+                          "fileCount" : 1
+                        },
+                        { "table" : "shake-prizebag-exposure-log",
+                          "fileCount" : 1
+                        },
+                        { "table" : "shake-query-prize-log",
+                          "fileCount" : 1
+                        },
+                        { "table" : "shake-record",
+                          "fileCount" : 1
+                        },
+                        { "table" : "shake-template",
+                          "fileCount" : 1
+                        },
+                        { "table" : "shake-user",
+                          "fileCount" : 1
+                        },
+                        { "table" : "sys-account-operating",
+                          "fileCount" : 1
+                        },
+                        { "table" : "tb-channel",
+                          "fileCount" : 1
+                        },
+                        { "table" : "tb-channel-idea",
+                          "fileCount" : 1
+                        },
+                        { "table" : "trace",
+                          "fileCount" : 1
+                        },
+                        { "table" : "u-market",
+                          "fileCount" : 1
+                        },
+                        { "table" : "u-province-city",
+                          "fileCount" : 1
+                        },
+                        { "table" : "u-shop",
+                          "fileCount" : 1
+                        },
+                        { "table" : "u-user",
+                          "fileCount" : 1
+                        },
+                        { "table" : "wx-shake-device-page",
+                          "fileCount" : 1
+                        },
+                        { "table" : "wx-shake-page",
+                          "fileCount" : 1
+                        },
+                        { "table" : "wx-shake-park",
+                          "fileCount" : 1
+                        }]},
+                   {"servers" : "rtmap-name-01,rtmap-name-02",
+                    "port" : "50070",
+                    "prefix" : "/databank/ods/weixin",
+                    "criteria" : 
+                      [ { "table" : "shakepage",
+                          "fileCount" : 1
+                        }]}
+]}
