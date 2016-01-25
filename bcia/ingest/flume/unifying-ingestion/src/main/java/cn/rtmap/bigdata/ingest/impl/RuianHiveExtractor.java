@@ -10,6 +10,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.flume.Context;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
@@ -17,6 +18,7 @@ import org.slf4j.LoggerFactory;
 
 import cn.rtmap.bigdata.ingest.base.Extractor;
 import cn.rtmap.bigdata.ingest.base.JsonElement;
+import cn.rtmap.bigdata.ingest.constant.CommonConstants;
 import cn.rtmap.bigdata.ingest.constant.DBConstants;
 import cn.rtmap.bigdata.ingest.ruian.Action;
 import cn.rtmap.bigdata.ingest.ruian.Data;
@@ -30,13 +32,17 @@ public class RuianHiveExtractor implements Extractor {
 	private Statement statement = null;
 	private int threshold = 200;
 	private boolean isFinish = false;
-
+	private boolean debugger = false;
+	private String date = "";
+	
 	@Override
 	public void init(Context ctx) {
 		String driver=ctx.getString(DBConstants.CONFIG_JDBC_DRIVER,"").trim();
 		String url=ctx.getString(DBConstants.CONFIG_CONNECTION_URL,"").trim();
 		String username=ctx.getString(DBConstants.CONFIG_CONNECTION_USERNAME,"").trim();
 		String password=ctx.getString(DBConstants.CONFIG_CONNECTION_PASSWORD,"").trim();
+		debugger=ctx.getBoolean(CommonConstants.CONFIG_DEBUG,false);
+		date=ctx.getString(CommonConstants.CONFIG_RECOVER_DATE,"").trim();
 		try {
 			connection = SQLUtil.getConnection(driver,url,username,password);
 			statement = connection.createStatement();
@@ -54,14 +60,21 @@ public class RuianHiveExtractor implements Extractor {
 	@Override
 	public Iterator<JsonElement<String, String>> getData() {
 		isFinish=true;
-		String yesterday = DateUtils.getDateByCondition(-1);
-		String day_id=yesterday.replaceAll("-", "");
+		if(debugger){
+			logger.info("debugger running with date : "+date);
+			if(StringUtils.isBlank(date)){
+				return null;
+			}
+		}else{
+			date = DateUtils.getDateByCondition(-1);
+		}
+		String day_id=date.replaceAll("-", "");
 		String month_id=day_id.substring(0, 6);
 		String sql="select mac,max(loc_time) as loc_time from (" 
 		           + "select mac,substr(loc_time,0,15) as dt,loc_time from ods_lbs_net_position_yyyymmdd "
 		           + "where month_id="+month_id+" and day_id="+day_id+" and build_id=860100010030100003"
 				   + ") t1 group by mac,dt";
-		//String sql="select mac,loc_time from ods_lbs_net_position_yyyymmdd where month_id=201601 and day_id=20160118 limit 200";
+		//String sql="select mac,loc_time from ods_lbs_net_position_yyyymmdd where month_id=201601 and day_id=20160121 limit 20";
 		logger.info("starting get data: "+sql);
 		List<JsonElement<String, String>> res = new LinkedList<JsonElement<String, String>>();
 		Map<String, List<String>> datas=new HashMap<>();//<mac,times>

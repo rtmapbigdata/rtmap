@@ -38,6 +38,9 @@ public class RuianInnerJob extends BaseJob implements Job {
 		int events=0;
 		while (extractor.prepare()) {
 			Iterator<JsonElement<String, String>> it = extractor.getData();
+			if(it == null){
+				continue;
+			}
 			while (it.hasNext()) {
 				Event event = buildEvent(it.next());
 				channel.processEvent(event);

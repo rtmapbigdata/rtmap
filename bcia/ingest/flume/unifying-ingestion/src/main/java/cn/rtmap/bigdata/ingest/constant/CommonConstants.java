@@ -7,6 +7,7 @@ public class CommonConstants {
 	public static final String  CONFIG_SCHED_THREAD = "sched.threads";
 	public static final String  CONFIG_CRON_EXPRESS = "cron.express";
 	public static final String  CONFIG_DEBUG        = "debugger";
+	public static final String  CONFIG_RECOVER_DATE = "recover.date";
 	
 	public static final String  DEFAULT_TMP_EXTENSION = ".tmp";
 	public static final String  DEFAULT_ZIP_EXTENSION = ".zip";
