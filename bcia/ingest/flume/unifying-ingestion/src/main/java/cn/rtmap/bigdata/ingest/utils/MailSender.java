@@ -155,6 +155,7 @@ public class MailSender {
     }
 
     public static void main(String[] args) {
+    	final String defaultMailList = "wangjianbin@rtmap.com,liujialin@rtmap.com,zhangxiangwei@rtmap.com,changfugang@rtmap.com,weishuran@rtmap.com,baiyang@rtmap.com"; 
     	StringBuffer sb = new StringBuffer();
         try{
         	String pyCmd = String.format("%s %s", "python", "monitor_bcia.py");
@@ -177,6 +178,10 @@ public class MailSender {
         
         String title = String.format("bcia-queue monitoring report %s", sdf.format(date));
         String content = sb.toString();
-        sendTextMail("wangjianbin@rtmap.com,liujialin@rtmap.com,zhangxiangwei@rtmap.com,243798275@qq.com,260497070@qq.com,411588524@qq.com", title, content);
+        if (args.length > 0) {
+        	sendTextMail(args[0], title, content);
+        } else {
+        	sendTextMail(defaultMailList, title, content);
+        }
     }
 }
