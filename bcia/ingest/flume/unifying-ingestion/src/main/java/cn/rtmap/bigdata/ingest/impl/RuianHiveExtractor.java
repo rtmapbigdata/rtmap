@@ -71,7 +71,7 @@ public class RuianHiveExtractor implements Extractor {
 		String day_id=date.replaceAll("-", "");
 		String month_id=day_id.substring(0, 6);
 		String sql="select mac,max(loc_time) as loc_time from (" 
-		           + "select mac,substr(loc_time,0,15) as dt,loc_time from ods_lbs_net_position_yyyymmdd "
+		           + "select mac,substr(loc_time,0,15) as dt,loc_time from stage_lbs_net_position_yyyymmdd "
 		           + "where month_id="+month_id+" and day_id="+day_id+" and build_id=860100010030100003"
 				   + ") t1 group by mac,dt";
 		//String sql="select mac,loc_time from ods_lbs_net_position_yyyymmdd where month_id=201601 and day_id=20160121 limit 20";
