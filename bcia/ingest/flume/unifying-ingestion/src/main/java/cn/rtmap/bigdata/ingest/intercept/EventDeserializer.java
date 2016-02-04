@@ -34,6 +34,7 @@ public class EventDeserializer extends AbstractFlumeInterceptor {
 			event.setBody(obj.getBody());
 		} catch (IOException e) {
 			logger.error("deserialize error", e);
+			return null;
 		}
 		
 		return event;

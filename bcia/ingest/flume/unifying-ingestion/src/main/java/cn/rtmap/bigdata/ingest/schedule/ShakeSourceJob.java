@@ -28,7 +28,7 @@ public class ShakeSourceJob extends BaseJob implements Job {
 		Extractor extractor = new ShakeExtractor();
 		extractor.init(ctx);
 
-		if (extractor.prepare()) {
+		while (extractor.prepare()) {
 			Iterator<JsonElement<String, String>> it = extractor.getData();
 			while (it.hasNext()) {
 				Event event = buildEvent(it.next());
