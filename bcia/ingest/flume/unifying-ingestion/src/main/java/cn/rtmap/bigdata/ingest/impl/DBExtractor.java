@@ -1,6 +1,7 @@
 package cn.rtmap.bigdata.ingest.impl;
 
 import java.io.File;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -102,9 +103,10 @@ public class DBExtractor extends AbstractExtractor{
 				rs = statement.executeQuery(sql);
 				boolean succ = SQLUtil.saveResultSetAsCSV(rs, tmpFile);
 				if(succ){
-					SQLUtil.createVerfFile(new File(tmpFile), fileName+CommonConstants.DEFAULT_FILE_EXTENSION, 
-							filePath+FileSourceConfigurationConstants.DEFAULT_VERF_EXTENSION);
+					String tmpVerf=filePath + FileSourceConfigurationConstants.DEFAULT_VERF_EXTENSION + CommonConstants.DEFAULT_TMP_EXTENSION;
+					SQLUtil.createVerfFile(new File(tmpFile), fileName+CommonConstants.DEFAULT_FILE_EXTENSION, tmpVerf);
 					SQLUtil.zipFile(tmpFile,filePath+CommonConstants.DEFAULT_ZIP_EXTENSION,true);
+					new File(tmpVerf).renameTo(new File(filePath + FileSourceConfigurationConstants.DEFAULT_VERF_EXTENSION));
 				}
 				logger.info("finish query: " + filePath);
 			} catch (Exception e) {
@@ -123,5 +125,23 @@ public class DBExtractor extends AbstractExtractor{
 	public void cleanup() {
 		SQLUtil.close(connection, statement);
 		logger.info("---------- finish job ----------");
+	}
+	
+	public static void main(String[] args) {
+		try {
+			String fileName="db-market";
+			String filePath="C:\\Users\\zxw\\Desktop\\temp\\temp\\" + fileName;
+			String tmpFile  = filePath + CommonConstants.DEFAULT_TMP_EXTENSION;
+			String tmpVerf=filePath + FileSourceConfigurationConstants.DEFAULT_VERF_EXTENSION + CommonConstants.DEFAULT_TMP_EXTENSION;
+			SQLUtil.createVerfFile(new File(tmpFile), fileName+CommonConstants.DEFAULT_FILE_EXTENSION, tmpVerf);
+			System.out.println("tmp verf");
+			Thread.sleep(5000);
+			SQLUtil.zipFile(tmpFile,filePath+CommonConstants.DEFAULT_ZIP_EXTENSION,true);
+			System.out.println("zip");
+			Thread.sleep(5000);
+			new File(tmpVerf).renameTo(new File(filePath + FileSourceConfigurationConstants.DEFAULT_VERF_EXTENSION));
+		}catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 }
