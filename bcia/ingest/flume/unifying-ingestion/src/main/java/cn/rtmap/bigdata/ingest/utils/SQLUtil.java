@@ -30,6 +30,7 @@ import au.com.bytecode.opencsv.CSVWriter;
 
 public class SQLUtil {
 	private static final Logger logger = LoggerFactory.getLogger(SQLUtil.class);
+	private static int WRITELINES = 5000;
 	
 	public static void dump(Connection connection, List<String> querys, String incomingDir) throws Exception {
 		Statement statement = connection.createStatement();
@@ -142,18 +143,26 @@ public class SQLUtil {
 			logger.error("save resultset as csv error: resultset or fileName is null");
 			return false;
 		}
+		File csvFile = new File(fileName);
+		FileUtils.forceMkdir(csvFile.getParentFile());
+		if(csvFile.exists() && csvFile.isFile()){
+			logger.info("File exist,delete first: "+fileName);
+			FileUtils.deleteQuietly(csvFile);
+		}
+		
 		List<String[]> allRows = new ArrayList<String[]>();
 		String[] row=null;
 		ResultSetMetaData meta = rs.getMetaData();
 		int num = meta.getColumnCount();
+		long lines=0;
+		CSVWriter csvWriter= null;
 		while (rs.next()) {
 			row = new String[num];
 			for (int i = 1; i <= num; ++i) {
 				if (rs.getObject(i) != null){
 					if("TINYINT".equalsIgnoreCase(meta.getColumnTypeName(i))){
 						row[i-1] = rs.getInt(i)+"";
-					}else{
-						//replace \t \r \n with special sign
+					}else{//replace \t \r \n with special sign
 						row[i-1] = rs.getObject(i).toString()
 								.replaceAll(DBConstants.SIGN_TAB, DBConstants.REPLACE_TAB)
 								.replaceAll(DBConstants.SIGN_RET_R, DBConstants.REPLACE_RET_R)
@@ -164,22 +173,29 @@ public class SQLUtil {
 				}
 			}
 			allRows.add(row);
+			if(allRows.size() >= WRITELINES){
+				lines+=WRITELINES;
+				if(csvWriter==null){
+					csvWriter= new CSVWriter(new FileWriter(fileName), '\t', CSVWriter.NO_QUOTE_CHARACTER);
+				}
+				csvWriter.writeAll(allRows);
+				allRows.clear();
+			}
 		}
-		logger.info("resultset line count is "+allRows.size());
-		if(allRows.size() == 0){
-			return false;
+		if(allRows.size()>0){
+			lines+=allRows.size();
+			if(csvWriter==null){
+				csvWriter= new CSVWriter(new FileWriter(fileName), '\t', CSVWriter.NO_QUOTE_CHARACTER);
+			}
+			csvWriter.writeAll(allRows);
+			allRows.clear();
 		}
-		File csvFile = new File(fileName);
-		FileUtils.forceMkdir(csvFile.getParentFile());
-		if(csvFile.exists() && csvFile.isFile()){
-			logger.info("File exist,delete first: "+fileName);
-			FileUtils.deleteQuietly(csvFile);
+		if(csvWriter!=null){
+			csvWriter.flush();
+	        csvWriter.close();
 		}
-	    CSVWriter csvWriter= new CSVWriter(new FileWriter(fileName), '\t', CSVWriter.NO_QUOTE_CHARACTER);
-	    csvWriter.writeAll(allRows);
-        csvWriter.flush();
-        csvWriter.close();
-        return true;
+		logger.info("resultset line count is "+lines);
+        return lines!=0;
 	}
 	
 	public static Connection getConnection(String driver, String url, String username, String password) throws Exception {
@@ -249,7 +265,18 @@ public class SQLUtil {
     
 	public static void main(String[] args){
 		try {
-			zipFile("C:\\Users\\zxw\\Desktop\\temp\\yarn-site.xml", "C:\\Users\\zxw\\Desktop\\temp\\yarn-site.zip",false);
+			//zipFile("C:\\Users\\zxw\\Desktop\\temp\\yarn-site.xml", "C:\\Users\\zxw\\Desktop\\temp\\yarn-site.zip",false);
+			List<String[]> allRows = new ArrayList<String[]>();
+			String[] row = new String[2];
+			row[0]="hello";row[1]="public static void createVerfFile(File file, String fileName, String verfFile) throws IOException{}public static void createVerfFile(File file, String fileName, String verfFile) throws IOException{}public static void createVerfFile(File file, String fileName, String verfFile) throws IOException{}";
+			for(int i=0;i<5000;i++){
+				allRows.add(row);
+			}
+			allRows.add(row);
+		    CSVWriter csvWriter= new CSVWriter(new FileWriter("C:\\Users\\zxw\\Desktop\\temp\\temp\\hello.txt"), '\t', CSVWriter.NO_QUOTE_CHARACTER);
+		    csvWriter.writeAll(allRows);
+	        csvWriter.flush();
+	        csvWriter.close();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
