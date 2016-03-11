@@ -75,6 +75,32 @@ public class URLUtil {
 		return result;
 	}
 	
+	public static String doHttpsGet(String url) throws IOException {
+		URL obj = new URL(url);
+		HttpsURLConnection conn = (HttpsURLConnection) obj.openConnection();
+
+		conn.setRequestMethod("GET");
+		conn.setRequestProperty("User-Agent", USER_AGENT);
+
+		int code = conn.getResponseCode();
+		LOG.debug("Sending 'GET' request to URL:" + url);
+		LOG.debug("Reponse code:" + code);
+		
+		BufferedReader rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+		StringBuffer sb = new StringBuffer();
+		
+		String line;
+		while ((line = rd.readLine()) != null) {
+			sb.append(line);
+		}
+
+		rd.close();
+		String result = sb.toString();
+
+		LOG.debug(result);
+		return result;
+	}
+	
 	public static String doPost(String url, String jsonData) throws IOException {
 		URL obj = new URL(url);
 		HttpURLConnection  conn = (HttpURLConnection) obj.openConnection();
